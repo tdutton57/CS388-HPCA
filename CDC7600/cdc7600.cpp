@@ -1,8 +1,9 @@
-/* File:    cdc7600.cpp
- * Project: CS388-HPCA
+/**
+ * @file    cdc7600.cpp
+ * @project CS388-HPCA
  *
- * Author:  David Zemon
- * Email:   david@stlswedespeed.com
+ * @author  David Zemon
+ * @email   david@stlswedespeed.com
  */
 
 #include "cdc7600.h"
@@ -11,15 +12,13 @@ int main (int argc, char *argv[]) {
     std::ifstream f;
 
     if (0 < argc) {
-        f.open(argv[0]);
+        f.open(argv[0], std::ios::in | std::ios::binary);
 
         if (!(f.is_open()))
             throw "Poooop!";
     } else {
         // TODO: Use default values
     }
-
-
 
     return 0;
 }

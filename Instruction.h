@@ -1,8 +1,9 @@
-/* Instruction.h
- * CS388-HPCA
+/**
+ * @file    Instruction.h
+ * @project CS388-HPCA
  *
- *  Author: David Zemon
- *   Email: david@stlswedespeed.com
+ * @author  David Zemon
+ * @email   david@stlswedespeed.com
  */
 
 #ifndef INSTRUCTION_H_
@@ -10,25 +11,27 @@
 
 #include <stdint.h>
 
-enum instructionType_t {LONG, SHORT, INSTRUCTION_TYPES};
+typedef enum _instructionType_t {
+    LONG, SHORT, INSTRUCTION_TYPES
+} instructionType_t;
 
 class Instruction {
     public:
         Instruction (const uint32_t instruction);
-        ~Instruction ();
 
         static instructionType_t getInstrType (const uint32_t instruction);
+        uint32_t getOp1 () const;
+        uint8_t getOp2 () const;
+        uint8_t getOp3 () const;
+        uint8_t getOpcode () const;
+        instructionType_t getType () const;
 
     protected:
-        uint32_t m_instruction;
+        instructionType_t m_type;
         uint8_t m_opcode;
-        uint32_t m_opcodeMask;
         uint32_t m_op1;
-        uint32_t m_op1Mask;
         uint8_t m_op2;
-        uint32_t m_op2Mask;
         uint8_t m_op3;
-        uint32_t m_op3Mask;
 };
 
 #endif /* INSTRUCTION_H_ */

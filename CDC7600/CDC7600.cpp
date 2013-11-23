@@ -1,8 +1,9 @@
-/* CDC7600.cpp
- * CS388-HPCA
+/**
+ * @file    CDC7600.cpp
+ * @project CS388-HPCA
  *
- *  Author: David Zemon
- *   Email: david@stlswedespeed.com
+ * @author  David Zemon
+ * @email   david@stlswedespeed.com
  */
 
 #include "CDC7600.h"
