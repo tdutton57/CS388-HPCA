@@ -2,6 +2,7 @@
 using namespace std;
 #include <string>
 #include <stdio.h>
+
 void outputVariables (string data[]) {
     for (int i = 0, length = sizeof(data); i < length + 3; i++) {
         cout << data[i];
@@ -14,7 +15,7 @@ void goodbye () {
 }
 
 int calculateNumberofInstructions (string data[]) {
-    int value 5;
+    int value =5;
     return value;
 }
 
@@ -23,13 +24,73 @@ void calculateChart (string data[]) {
     cout
             << "| N | instruction | function | opcode | issue | start | result | unit ready | fetch | store "
             << endl;
+    char formula = calculateFormula(data);
     int instructions = calculateNumberofInstructions(data);
 
-    int wordNumber = 1;
-
-    for (i = 0; i < instructions; i++) {
-        printf("| N%d |", wordNumber);
-        printf("%s", instructionStrings)
+    switch(formula) {
+        case 'P': //power and addition
+        cout<<formula<<endl;
+        cout<<"In Case P"<<endl;
+        gernerateTablePower(data,instruction);
+        break;
+        case 'M'://multiplication and addition
+        cout<<formula<<endl;
+        cout<<"In case M"<<endl;
+        generateTableMultiplicationAddition(data,instruction);
+        break;
+        case 'D': //division
+        cout<<formula<<endl;
+        cout<<"In case D"<<endl;
+        generateTableDivision(data,instruction);
+        break;
+        case 'S': //subtraction
+        cout<<formula<<endl;
+        cout<<"In case S"<<endl;
+        generateTableSubtraction(data,instruction);
+        break;
+        default:
+            cout<<"No matching cases formula is: "<<formula<<endl;
     }
+
+}
+
+//generate the formula 
+char calculateFormula(string data[]) {
+    char formula;
+    if(data[0] == "A" && data[1] == "A")
+    {    
+        formula = 'M';
+       
+    }
+    else if(data[2] == "^")
+    {
+        formula = 'P'; 
+    }
+    else if(data[2] == "/" || data[5] == "/" ){
+        formula = 'D';
+    }
+    else if(data[2] == "-" || data[5] == "-"){
+        formula = 'S';
+    }
+    else
+        cout<<"no matches"<<endl;
+    return formula;
+
+}
+
+
+void gernerateTablePower(string data[], int instruction) {
+
+}
+
+void generateTableSubtraction(string data[],int instruction) {
+
+}
+
+void generateTableDivision(string data[], int instruction) {
+
+}
+
+void generateTableMultiplicationAddition(string data[], int instruction) {
 
 }

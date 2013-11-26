@@ -9,10 +9,8 @@
 
 
 int main () {
-  int max=8;
-  string array[max];
+  string array[8];
   int value = 0;
-
   string line;
   ifstream myfile ("info.txt");
   if (myfile.is_open())
@@ -31,7 +29,6 @@ int main () {
   outputVariables(array);
   calculateChart(array);
   goodbye();
-
 
   return 0;
 }
