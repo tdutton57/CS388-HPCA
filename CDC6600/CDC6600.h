@@ -21,9 +21,7 @@ int calculateNumberofInstructions (string data[]) {
 
 void calculateChart (string data[]) {
     int clockCycle = 0;
-    cout
-            << "| N | instruction | function | opcode | issue | start | result | unit ready | fetch | store "
-            << endl;
+    cout<< "| N | instruction | function | opcode | issue | start | result | unit ready | fetch | store "<< endl;
     char formula = calculateFormula(data);
     int instructions = calculateNumberofInstructions(data);
 
@@ -56,8 +54,8 @@ void calculateChart (string data[]) {
 
 //generate the formula 
 char calculateFormula(string data[]) {
-    char formula;
-    if(data[0] == "A" && data[1] == "A")
+    char formula = 'Z';
+    /*if(data[0] == "A" && data[1] == "A")
     {    
         formula = 'M';
        
@@ -73,13 +71,33 @@ char calculateFormula(string data[]) {
         formula = 'S';
     }
     else
-        cout<<"no matches"<<endl;
+        cout<<"no matches"<<endl;*/
     return formula;
 
 }
 
 
 void gernerateTablePower(string data[], int instruction) {
+
+    //First two setps are always fetch 
+    string instructions[7];
+    for(int i =0; i<7;++i) {
+     instructions[i] = i;//generateInstruction(data);
+     function[i] = i;
+    }
+    int clockCycles =1;
+    //generateFunction(data)
+    for int(i =0; i<7;i++)
+        cout<<"N"<<i<<" "<<instructions[i]<<" "<<function[i]<<" "<<opCode<<" ";
+        cout<<clockCycles<<" "<<clockCycles<<" ";
+        clockCycles = clockCycles+3;
+        cout<<" "<<clockCycles;
+        clockCycle++;
+        cout<<" "<<clockCycles<<" ";
+        clockCycles = clockCycles+2;
+        cout<<" "<<clockCycles<<" ";
+        clockCycles = clockCycles+4;
+        cout<<" "<<clockCycles<<" "<<endl;
 
 }
 
