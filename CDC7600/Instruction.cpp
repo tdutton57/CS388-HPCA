@@ -77,7 +77,7 @@ uint8_t Instruction::getOp3 () const {
     return m_op3;
 }
 
-uint8_t Instruction::getOpcode () const {
+opcode_t Instruction::getOpcode () const {
     return m_opcode;
 }
 

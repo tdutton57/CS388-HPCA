@@ -11,16 +11,6 @@
 #include "FunctionalUnit.h"
 
 FunctionalUnit::FunctionalUnit (const fu_t type) {
-    switch (type) {
-        case FLOAT_MUL:
-            m_segTime = 2;
-            break;
-        case FLOAT_DIV:
-            m_segTime = 18;
-            break;
-        default:
-            m_segTime = 1;
-    }
 
     switch (type) {
         case FLOAT_MUL:
@@ -34,6 +24,17 @@ FunctionalUnit::FunctionalUnit (const fu_t type) {
             break;
         default:
             m_execTime = 2;
+    }
+
+    switch (type) {
+        case FLOAT_MUL:
+            m_segTime = 2;
+            break;
+        case FLOAT_DIV:
+            m_segTime = 18;
+            break;
+        default:
+            m_segTime = 1;
     }
 
     m_ready = 0;

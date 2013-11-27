@@ -1,5 +1,5 @@
 /**
- * @file    FunctionalUnit.h
+ * @file    Stage.h
  * @project CDC7600
  *
  * @author  David Zemon
@@ -26,31 +26,28 @@ typedef enum _fu_t {
     FU_TYPES
 } fu_t;
 
-/**
- *
- */
 class FunctionalUnit {
     public:
         FunctionalUnit (const fu_t type);
 
         /**
-         * @brief   Run the functional unit
+         * @brief   Run the the scoreboard stage
          *
-         * @param   Clock cycle that the functional unit should begin execution
+         * @param   Clock cycle that the stage should begin execution
          *
-         * @return  Clock cycle when result is has been written
+         * @return  Clock cycle when stage has completed
          */
         unsigned int run (const unsigned int startTime);
 
         /**
          *
          */
-        unsigned int getUnitReady();
+        unsigned int getUnitReady ();
 
     protected:
         uint8_t m_execTime;
-        uint8_t m_segTime;
         unsigned int m_ready;
+        uint8_t m_segTime;
 };
 
 #endif /* FUNCTIONALUNIT_H_ */

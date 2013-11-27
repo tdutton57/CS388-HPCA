@@ -18,8 +18,8 @@
 
 // Program instructions
 const Instruction program1[] = {
-        Instruction(FETCH, NULL_OPERAND, 1, NULL_OPERAND),
-        Instruction(FETCH, NULL_OPERAND, 2, NULL_OPERAND),
+        Instruction(FETCH, 1, 1, NULL_OPERAND),  // Add 1 to A1; Fetch @(A1 + 1) into X1
+        Instruction(FETCH, 2, 1, NULL_OPERAND),  // Add 1 to A2; Fetch @(A2 + 1) into X2
         Instruction(MULF, 1, 1, 2)
 };
 

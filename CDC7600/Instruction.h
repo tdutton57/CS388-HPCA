@@ -31,10 +31,10 @@ class Instruction {
 
         static instructionType_t getInstrType (const uint32_t instruction);
         static instructionType_t getInstrType (const opcode_t opcode);
+        opcode_t getOpcode () const;
         uint32_t getOp1 () const;
         uint8_t getOp2 () const;
         uint8_t getOp3 () const;
-        uint8_t getOpcode () const;
         instructionType_t getType () const;
 
         bool operator== (const Instruction &rhs);
