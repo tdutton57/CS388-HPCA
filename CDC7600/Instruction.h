@@ -2,7 +2,7 @@
  * @file    Instruction.h
  * @project CS388-HPCA
  *
- * @author  David Zemon and Katie Isbell
+ * @author  David Zemon, Katie Isbell
  * @email   david@stlswedespeed.com
  */
 

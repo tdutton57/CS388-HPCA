@@ -2,7 +2,7 @@
  * @file    cdc7600_main.h
  * @project CS388-HPCA
  *
- * @author  David Zemon
+ * @author  David Zemon, Katie Isbell
  * @email   david@stlswedespeed.com
  */
 

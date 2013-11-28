@@ -2,7 +2,7 @@
  * @file    FunctionalUnit.h
  * @project CDC7600
  *
- * @author  David Zemon and Katie Isbell
+ * @author  David Zemon, Katie Isbell
  * @email   david@stlswedespeed.com
  *
  * @description

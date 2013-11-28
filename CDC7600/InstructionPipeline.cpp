@@ -2,7 +2,7 @@
  * @file    InstructionPipeline.cpp
  * @project CDC7600
  *
- * @author  David Zemon
+ * @author  David Zemon, Katie Isbell
  * @email   david@stlswedespeed.com
  *
  * @description
