@@ -9,25 +9,10 @@
 
 
 int main () {
-  string array[8];
-  int value = 0;
-  string line;
-  ifstream myfile ("info.txt");
-  if (myfile.is_open())
-  {
-    while ( getline (myfile,line) )
-    {
-      array[value] = line;
-      value++;
-    }
-    myfile.close();
-  }
-  else {
-  	cout<<"unable to open file"<<endl;
-  }
-
-  outputVariables(array);
-  calculateChart(array);
+  welcome();
+  int formula = displayOptions();
+  //TODO: FIX MAIN 
+  calculateChart(array,formula);
   goodbye();
 
   return 0;
