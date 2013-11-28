@@ -12,21 +12,23 @@
 #include <iostream>
 #include <list>
 #include <algorithm>
+#include <sstream>
+#include <string>
 #include "Instruction.h"
 #include "FunctionalUnit.h"
+#include "InstructionPipeline.h"
 
-#define CDC7600_MEM_ACCESS_TIME     4
-#define CDC7600_PC_INC_TIME         2
-#define CDC7600_REGISTER_BANK_SIZE  8
+#define CDC7600_REGISTER_BANK_SIZE    8
+#define CDC7600_WORDS_PER_LONGWORD    2
+#define CDC7600_MEM_ACCESS_TIME       4
+#define CDC7600_OUTPUT_DELIM          ','
 
 typedef unsigned int Register;
 
 class CDC7600 {
     public:
-        CDC7600 (std::ostream *out, std::list<uint64_t> *program);
-
         CDC7600 (std::ostream *out, const Instruction program[],
-                const int instrCount);
+                const unsigned int instrCount);
 
         ~CDC7600 ();
 
@@ -39,21 +41,23 @@ class CDC7600 {
     protected:
         void initOutput ();
 
-        FunctionalUnit* getFunctionalUnit (Instruction *instr) const;
+        FunctionalUnit* getFunctionalUnit (const Instruction *instr);
         std::list<Register> getRegisterOperands (Instruction *instr) const;
 
         unsigned int getResultsAvailable (std::list<Register> *registers);
 
-        void runInstruction(Instruction *);
+        void runInstruction (Instruction *instr);
 
     protected:
         std::ostream *m_out;
 
-        std::list<Instruction> *m_instrMem;
+        InstructionPipeline m_instrMem;
+        unsigned int m_pc;
 
         unsigned int m_clock;
         unsigned int m_issue;
         unsigned int m_issueWord;
+        std::vector<FunctionalUnit> m_funcUnits;
 
         Register m_Rx[CDC7600_REGISTER_BANK_SIZE];
         Register m_Ra[CDC7600_REGISTER_BANK_SIZE];
