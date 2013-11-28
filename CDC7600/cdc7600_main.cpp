@@ -9,12 +9,12 @@
 #include "cdc7600_main.h"
 
 int main (int argc, char *argv[]) {
-    Instruction *program;
     CDC7600 *superPuter;
 
     // Read in the program instructions
-    //    program = readFile(argc, argv);
-    //    superPuter = new CDC7600(&program);
+    //Instruction *program;
+    //program = readFile(argc, argv);
+    //superPuter = new CDC7600(&program);
 
     // Print a greeting
     std::cout
@@ -25,9 +25,9 @@ int main (int argc, char *argv[]) {
     std::cout << "Select the input to this program from the list below.\n"
             << "Enter just the number that corresponds to the equation.\n";
 
-    std::cout << "1. Y = Ax^2 + B\n";
-    std::cout << "2. Y = Ax^2 + Bx + c\n";
-    std::cout << "3. Y = Ax^2 + Bx + c (X and Y are vectors)\n";
+    std::cout << "1. Y = A*X^2 + B\n";
+    std::cout << "2. Y = A*X^2 + B*X + c\n";
+    std::cout << "3. Y = A*X^2 + B*X + c (X and Y are vectors)\n";
 
     unsigned int selectedProgram;
     std::cin >> selectedProgram;
@@ -50,15 +50,12 @@ int main (int argc, char *argv[]) {
 
     superPuter->run();
 
-    delete[] program;
-
     return 0;
 }
 
 Instruction* readFile (int argc, char *argv[]) {
     Instruction *program;
     std::ifstream f;
-    uint32_t fileLen;
     std::string filename;
     std::vector<std::string> lines;
 
@@ -79,6 +76,18 @@ Instruction* readFile (int argc, char *argv[]) {
     }
 
     // Read in all lines of the program
+    std::string line;
+    do {
+        std::getline(f, line);
+        lines.push_back(line);
+    } while (!(f.eof()));
+
+    // Loop through every line of the program and decode the mess
+    program = new Instruction[lines.size()];
+    for (unsigned int i = 0; i < lines.size(); ++i) {
+        // TODO: Write huge lookup tables that do this correctly
+//        program[i] = Instruction();
+    }
 
     return program;
 }

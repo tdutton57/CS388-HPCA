@@ -87,6 +87,11 @@ class Instruction {
         };
 
     public:
+        Instruction () :
+                m_description(""), m_type(SHORT), m_wordNum(0), m_opcode(
+                        (opcode_t) 0), m_op1(x0), m_op2(0), m_op3(0) {
+        }
+
         /**
          * @brief   Constructor to create an instance of the class instruction
          */
