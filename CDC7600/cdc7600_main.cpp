@@ -9,15 +9,11 @@
 #include "cdc7600_main.h"
 
 int main (int argc, char *argv[]) {
-    unsigned int userInput;
     CDC7600 *superPuter;
-
-#ifndef DEBUG
-    std::ofstream OUT_FILE(OUT_FILENAME);
-    if (!(OUT_FILE.is_open())) {
-        throw FILE_DOES_NOT_EXIST;
-    }
-#endif
+    std::string userInput;
+    unsigned int selection;
+    std::ofstream *outFile;
+    std::ostream *output;
 
     // Read in the program instructions
     //Instruction *program;
@@ -39,26 +35,43 @@ int main (int argc, char *argv[]) {
     std::cout << "\t3. Y = A*X^2 + B*X + c (X and Y are vectors)" << std::endl;
 
     std::cout << ">>> ";
-    std::cin >> userInput;
+    std::getline(std::cin, userInput);
+    selection = std::atoi(userInput.c_str());
+
+    std::cout << "Specify a path to write the output to [DEFAULT: stdout]" << std::endl;
+    std::cout << ">>> ";
+    std::getline(std::cin, userInput);
+
+    if (!(userInput.empty())) {
+        outFile = new std::ofstream(userInput.c_str());
+        if (!(outFile->is_open())) {
+            throw FILE_DOES_NOT_EXIST;
+        }
+        output = outFile;
+    } else
+        output = &(std::cout);
 
     // Run the selected program
     try {
-        switch (userInput) {
+        switch (selection) {
             case 1:
-                superPuter = new CDC7600(&OUTPUT, program1, sizeof(program1) / sizeof(*program1));
+                superPuter = new CDC7600(output, program1,
+                        sizeof(program1) / sizeof(*program1));
                 superPuter->run();
                 break;
             case 2:
-                superPuter = new CDC7600(&OUTPUT, program2, sizeof(program2) / sizeof(*program2));
+                superPuter = new CDC7600(output, program2,
+                        sizeof(program2) / sizeof(*program2));
                 superPuter->run();
                 break;
             case 3:
                 std::cout << "How long are the vectors X and Y?" << std::endl
                         << ">>> ";
-                std::cin >> userInput;
+                std::getline(std::cin, userInput);
 
-                superPuter = new CDC7600(&OUTPUT, program3, sizeof(program3) / sizeof(*program3));
-                superPuter->run(userInput);
+                superPuter = new CDC7600(output, program3,
+                        sizeof(program3) / sizeof(*program3));
+                superPuter->run(std::atoi(userInput.c_str()));
                 break;
             default:
                 throw INVALID_INPUT;
@@ -67,9 +80,8 @@ int main (int argc, char *argv[]) {
         std::fprintf(stderr, CDC7600_EXCEPTION_STRINGS[e].c_str());
     }
 
-#ifndef DEBUG
-    OUT_FILE.close();
-#endif
+    if (outFile->is_open())
+        outFile->close();
 
     return 0;
 }

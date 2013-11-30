@@ -17,16 +17,6 @@
 #include "CDC7600.h"
 #include "CDC7600_Exceptions.h"
 
-#define DEBUG
-
-#ifdef DEBUG
-#define OUTPUT          std::cout
-#else
-#define OUT_FILE        outfile
-#define OUT_FILENAME    "CDC7600_output2.csv"
-#define OUTPUT          OUT_FILE
-#endif
-
 /**
  * Program 1 instructions
  * Y = A*X^2 + B

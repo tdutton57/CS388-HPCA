@@ -87,6 +87,7 @@ void CDC7600::initOutput () {
     *m_out << "Instruction" << CDC7600_OUTPUT_DELIM;
     *m_out << "Description" << CDC7600_OUTPUT_DELIM;
     *m_out << "Len." << CDC7600_OUTPUT_DELIM;
+    *m_out << "Opcode" << CDC7600_OUTPUT_DELIM;
     *m_out << "Issue" << CDC7600_OUTPUT_DELIM;
     *m_out << "Start" << CDC7600_OUTPUT_DELIM;
     *m_out << "Result" << CDC7600_OUTPUT_DELIM;
@@ -158,6 +159,7 @@ void CDC7600::printInstrInfo (const Instruction *instr,
     else
         /* Implied: if (Instruction::SHORT == instr->getType()) */
         *m_out << "S" << CDC7600_OUTPUT_DELIM;
+    *m_out << instr->getOpcode() << CDC7600_OUTPUT_DELIM;
     *m_out << m_issue << CDC7600_OUTPUT_DELIM;
     *m_out << start << CDC7600_OUTPUT_DELIM;
     *m_out << result << CDC7600_OUTPUT_DELIM;
