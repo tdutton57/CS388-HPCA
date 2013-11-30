@@ -8,7 +8,7 @@
 
 #include "CDC7600.h"
 
-CDC7600::CDC7600 (std::ostream *out, const Instruction program[],
+CDC7600::CDC7600 (std::ostream *out, Instruction program[],
         const unsigned int instrCount) {
 
     m_out = out;
@@ -34,6 +34,9 @@ CDC7600::CDC7600 (std::ostream *out, const Instruction program[],
         for (uint8_t reg = 0; reg < CDC7600_REGISTER_BANK_SIZE; ++reg)
             banks[bank][reg] = (Register) NULL_OPERAND;
     delete[] banks;
+
+    // Initialize program memory
+    m_instrMem.load(program, instrCount);
 }
 
 CDC7600::~CDC7600 () {
@@ -158,15 +161,16 @@ void CDC7600::runInstruction (Instruction *instr) {
     *m_out << instr->getWordNum() << CDC7600_OUTPUT_DELIM;
     *m_out << instr->getDescription() << CDC7600_OUTPUT_DELIM;
     if (Instruction::LONG == instr->getType())
-        *m_out << "LONG" << CDC7600_OUTPUT_DELIM;
+        *m_out << "Long" << CDC7600_OUTPUT_DELIM;
     else
-        *m_out << "SHORT" << CDC7600_OUTPUT_DELIM;
+        *m_out << "Short" << CDC7600_OUTPUT_DELIM;
     *m_out << m_issue << CDC7600_OUTPUT_DELIM;
     *m_out << start << CDC7600_OUTPUT_DELIM;
     *m_out << result << CDC7600_OUTPUT_DELIM;
     *m_out << funcUnit->getUnitReady() << CDC7600_OUTPUT_DELIM;
-    *m_out << fetchStr << CDC7600_OUTPUT_DELIM;
-    *m_out << storeStr << CDC7600_OUTPUT_DELIM;
+    *m_out << fetchStr.str() << CDC7600_OUTPUT_DELIM;
+    *m_out << storeStr.str() << CDC7600_OUTPUT_DELIM;
+    *m_out << std::endl;
 }
 
 unsigned int CDC7600::getResultsAvailable (std::list<Register> *registers) {

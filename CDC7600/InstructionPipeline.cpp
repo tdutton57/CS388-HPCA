@@ -70,16 +70,19 @@ uint8_t InstructionPipeline::readInstr (const unsigned int pc,
         Instruction* &nextInstr) {
     uint8_t delay = DEFAULT_DELAY;
 
-    Instruction *prevInstr = &(m_instrMem[m_prevPC]);  // Previous instruction
-    nextInstr = &(m_instrMem[pc]);  // Requested instruction
+    // Grab requested instruction
+    nextInstr = &(m_instrMem[pc]);
 
-    // If the next instruction resides in a different word than the
-    // current, a memory access is required
-    if (prevInstr->getWordNum() != nextInstr->getWordNum())
-        delay += MEM_ACCESS_ADD_TIME;
-
-    // Calculate delay
+    // If this isn't the first instruction of the program, do cool things
     if ((unsigned int) NULL_OPERAND != m_prevPC) {
+        Instruction *prevInstr = &(m_instrMem[m_prevPC]);  // Previous instruction
+
+        // If the next instruction resides in a different word than the
+        // current, a memory access is required
+        if (prevInstr->getWordNum() != nextInstr->getWordNum())
+            delay += MEM_ACCESS_ADD_TIME;
+
+        // Calculate delay
         // Check if it's a branch
         if (prevInstr->getWordNum() > nextInstr->getWordNum())
             switch (nextInstr->getOpcode()) {

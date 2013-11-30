@@ -28,7 +28,7 @@ typedef unsigned int Register;
 
 class CDC7600 {
     public:
-        CDC7600 (std::ostream *out, const Instruction program[],
+        CDC7600 (std::ostream *out, Instruction program[],
                 const unsigned int instrCount);
 
         ~CDC7600 ();

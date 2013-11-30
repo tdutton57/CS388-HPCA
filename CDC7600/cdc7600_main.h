@@ -18,7 +18,7 @@
 #include "CDC7600_Exceptions.h"
 
 // Program 1 instructions
-const Instruction program1[] = {
+Instruction program1[] = {
         Instruction("Fetch x", Instruction::INC, Instruction::a1, 42, 0),
         Instruction("Fetch A", Instruction::INC, Instruction::a2, 42, 0),
         Instruction("Form x^2", Instruction::MULF, Instruction::x0,
@@ -31,7 +31,7 @@ const Instruction program1[] = {
         Instruction("Store Y", Instruction::INC, Instruction::a7, 42, 0) };
 
 // Program 2 instructions
-const Instruction program2[] = {
+Instruction program2[] = {
         Instruction("Fetch x", Instruction::INC, Instruction::a1, 1, 0),
         Instruction("Fetch A", Instruction::INC, Instruction::a2, 2, 0),
         Instruction("Form x^2", Instruction::MULF, Instruction::x0,
@@ -48,7 +48,7 @@ const Instruction program2[] = {
                 Instruction::x5, Instruction::x4),
         Instruction("Store Y", Instruction::INC, Instruction::a7, 5, 0) };
 
-const Instruction program3[] = { };
+Instruction program3[] = { };
 
 /**
  * @brief   Reads a file, 8 bytes at a time
