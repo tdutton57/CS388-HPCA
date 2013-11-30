@@ -1,0 +1,8 @@
+word #,description,instr. type,issue,start,result,unit ready,fetch,store,
+0,Fetch x,Long,2,9,11,10,15,,
+0,Fetch A,Long,3,10,12,11,16,,
+1,Form x^2,Short,4,4,9,6,,,
+1,Form Ax^2,Short,5,6,11,8,,,
+1,Fetch B,Long,6,11,13,12,17,,
+2,Form Y,Short,7,7,9,8,,,
+2,Store Y,Long,8,15,17,16,,21,

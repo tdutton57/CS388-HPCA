@@ -11,6 +11,13 @@
 int main (int argc, char *argv[]) {
     CDC7600 *superPuter;
 
+#ifndef DEBUG
+    std::ofstream OUT_FILE(OUT_FILENAME);
+    if (!(OUT_FILE.is_open())) {
+        throw FILE_DOES_NOT_EXIST;
+    }
+#endif
+
     // Read in the program instructions
     //Instruction *program;
     //program = readFile(argc, argv);
@@ -38,12 +45,12 @@ int main (int argc, char *argv[]) {
     try {
         switch (selectedProgram) {
             case 1:
-                superPuter = new CDC7600(&std::cout, program1,
+                superPuter = new CDC7600(&OUTPUT, program1,
                         sizeof(program1) / sizeof(*program1));
                 superPuter->run();
                 break;
             case 2:
-                superPuter = new CDC7600(&std::cout, program2,
+                superPuter = new CDC7600(&OUTPUT, program2,
                         sizeof(program2) / sizeof(*program2));
                 superPuter->run();
                 break;
@@ -61,6 +68,10 @@ int main (int argc, char *argv[]) {
     } catch (cdc7600_exception &e) {
         std::fprintf(stderr, CDC7600_EXCEPTION_STRINGS[e].c_str());
     }
+
+#ifndef DEBUG
+    OUT_FILE.close();
+#endif
 
     return 0;
 }
@@ -84,7 +95,7 @@ Instruction* readFile (int argc, char *argv[]) {
 
 // Throw an error if the given file path does not exist
     if (!(f.is_open())) {
-        throw "Error: File '" + filename + "' cannot be opened";
+        throw FILE_DOES_NOT_EXIST;
     }
 
 // Read in all lines of the program

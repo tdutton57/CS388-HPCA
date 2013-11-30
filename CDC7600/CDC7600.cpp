@@ -12,6 +12,7 @@ CDC7600::CDC7600 (std::ostream *out, Instruction program[],
         const unsigned int instrCount) {
 
     m_out = out;
+    m_firstRun = true;
     m_pc = 0;
     m_clock = 0;
     m_issue = 1;
@@ -45,6 +46,11 @@ CDC7600::~CDC7600 () {
 
 int CDC7600::run () {
     Instruction *instr;
+
+    if (m_firstRun) {
+        initOutput();
+        m_firstRun = !m_firstRun;
+    }
 
     for (unsigned int i = 0; i < m_instrMem.size(); ++i) {
         m_issue += m_instrMem.readInstr(m_pc, instr);
@@ -80,15 +86,15 @@ int CDC7600::runLoop (const int n) {
 }
 
 void CDC7600::initOutput () {
-    *m_out << "word #" << CDC7600_OUTPUT_DELIM;
-    *m_out << "description" << CDC7600_OUTPUT_DELIM;
-    *m_out << "instr. type" << CDC7600_OUTPUT_DELIM;
-    *m_out << "issue" << CDC7600_OUTPUT_DELIM;
-    *m_out << "start" << CDC7600_OUTPUT_DELIM;
-    *m_out << "result" << CDC7600_OUTPUT_DELIM;
-    *m_out << "unit ready" << CDC7600_OUTPUT_DELIM;
-    *m_out << "fetch" << CDC7600_OUTPUT_DELIM;
-    *m_out << "store" << CDC7600_OUTPUT_DELIM << std::endl;
+    *m_out << "Word #" << CDC7600_OUTPUT_DELIM;
+    *m_out << "Description" << CDC7600_OUTPUT_DELIM;
+    *m_out << "Instr. Type" << CDC7600_OUTPUT_DELIM;
+    *m_out << "Issue" << CDC7600_OUTPUT_DELIM;
+    *m_out << "Start" << CDC7600_OUTPUT_DELIM;
+    *m_out << "Result" << CDC7600_OUTPUT_DELIM;
+    *m_out << "Unit Ready" << CDC7600_OUTPUT_DELIM;
+    *m_out << "Fetch" << CDC7600_OUTPUT_DELIM;
+    *m_out << "Store" << CDC7600_OUTPUT_DELIM << std::endl;
 }
 
 // Get the functional unit for an instruction

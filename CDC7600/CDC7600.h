@@ -51,6 +51,7 @@ class CDC7600 {
 
     protected:
         std::ostream *m_out;
+        bool m_firstRun;
 
         InstructionPipeline m_instrMem;
         unsigned int m_pc;

@@ -17,6 +17,16 @@
 #include "CDC7600.h"
 #include "CDC7600_Exceptions.h"
 
+#define DEBUG
+
+#ifdef DEBUG
+#define OUTPUT          std::cout
+#else
+#define OUT_FILE        outfile
+#define OUT_FILENAME    "CDC7600_output.csv"
+#define OUTPUT          OUT_FILE
+#endif
+
 // Program 1 instructions
 Instruction program1[] = {
         Instruction("Fetch x", Instruction::INC, Instruction::a1, 42, 0),
