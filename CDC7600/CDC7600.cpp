@@ -10,13 +10,7 @@
 
 CDC7600::CDC7600 (std::ostream *out, Instruction program[],
         const unsigned int instrCount) {
-
     m_out = out;
-    m_firstRun = true;
-    m_pc = 0;
-    m_clock = 0;
-    m_issue = 1;
-    m_issueWord = 1;  // The time the first instruction of this word was issued
 
     // Initialize the functional units
     FunctionalUnit::type unit = static_cast<FunctionalUnit::type>(0);
@@ -25,19 +19,10 @@ CDC7600::CDC7600 (std::ostream *out, Instruction program[],
         unit = static_cast<FunctionalUnit::type>(((int) unit) + 1);
     }
 
-    // Initialize all registers to NULL_OPERAND (signaling that their values are
-    // uninitialized which is useful during error-checking)
-    Register **banks = new Register*[3];
-    banks[0] = m_Rx;
-    banks[1] = m_Ra;
-    banks[2] = m_Rb;
-    for (uint8_t bank = 0; bank < 3; ++bank)
-        for (uint8_t reg = 0; reg < CDC7600_REGISTER_BANK_SIZE; ++reg)
-            banks[bank][reg] = (Register) NULL_OPERAND;
-    delete[] banks;
-
     // Initialize program memory
     m_instrMem.load(program, instrCount);
+
+    reset();
 }
 
 CDC7600::~CDC7600 () {
@@ -63,7 +48,7 @@ int CDC7600::run () {
     return 0;
 }
 
-int CDC7600::runLoop (const int n) {
+int CDC7600::run (const int n) {
     int sum = 0;
 
     // Preparation for looping!
@@ -85,10 +70,33 @@ int CDC7600::runLoop (const int n) {
     return sum;
 }
 
+void CDC7600::reset () {
+    m_firstRun = true;
+    m_pc = 0;
+    m_clock = 0;
+    m_issue = 0;
+
+    // Reset functional units
+    for (unsigned int i = 0; i < m_funcUnits.size(); ++i)
+        m_funcUnits[i].reset();
+
+    // Initialize all registers to NULL_OPERAND (signaling that their values are
+    // uninitialized which is useful during error-checking)
+    Register **banks = new Register*[3];
+    banks[0] = m_Rx;
+    banks[1] = m_Ra;
+    banks[2] = m_Rb;
+    for (uint8_t bank = 0; bank < 3; ++bank)
+        for (uint8_t reg = 0; reg < CDC7600_REGISTER_BANK_SIZE; ++reg)
+            banks[bank][reg] = (Register) NULL_OPERAND;
+    delete[] banks;
+}
+
 void CDC7600::initOutput () {
     *m_out << "Word #" << CDC7600_OUTPUT_DELIM;
+    *m_out << "Instruction" << CDC7600_OUTPUT_DELIM;
     *m_out << "Description" << CDC7600_OUTPUT_DELIM;
-    *m_out << "Instr. Type" << CDC7600_OUTPUT_DELIM;
+    *m_out << "Len." << CDC7600_OUTPUT_DELIM;
     *m_out << "Issue" << CDC7600_OUTPUT_DELIM;
     *m_out << "Start" << CDC7600_OUTPUT_DELIM;
     *m_out << "Result" << CDC7600_OUTPUT_DELIM;
@@ -97,7 +105,78 @@ void CDC7600::initOutput () {
     *m_out << "Store" << CDC7600_OUTPUT_DELIM << std::endl;
 }
 
-// Get the functional unit for an instruction
+void CDC7600::runInstruction (Instruction *instr) {
+    unsigned int start = 0, result = 0, fetch = 0, store = 0;
+    std::stringstream fetchStr, storeStr;
+
+    // Determine this instruction's functional unit and which operands it
+    // needs
+    FunctionalUnit *funcUnit = getFunctionalUnit(instr);
+    std::list<Instruction::register_t> usedOperands = getDependencyRegisters(
+            instr);
+
+    // Calculate start based on:
+    //     max(issue, functional unit ready, operands ready)
+    unsigned int last = latestDependencyTime(usedOperands);
+    start = std::max(std::max(m_issue, funcUnit->getUnitReady()), last);
+
+    // Calculate result and run the functional unit to calculate unit ready
+    result = funcUnit->run(start);  // start + execution time
+
+    // Calculate fetch or store
+    if (Instruction::INC == instr->getOpcode()
+            && Instruction::a0 != instr->getOp1())
+        switch (instr->getOp1()) {
+            case Instruction::a1:
+            case Instruction::a2:
+            case Instruction::a3:
+            case Instruction::a4:
+            case Instruction::a5:
+                fetch = result + CDC7600_MEM_ACCESS_TIME;
+                fetchStr << fetch;
+                *(getRegisterP(
+                        static_cast<Instruction::register_t>(instr->getOp1()
+                                - Instruction::a0))) = fetch;
+                break;
+            case Instruction::a6:
+            case Instruction::a7:
+                store = result + CDC7600_MEM_ACCESS_TIME;
+                storeStr << store;
+                break;
+            default:
+                *(getRegisterP(instr->getOp1())) = result;
+        }
+    else
+        *(getRegisterP(instr->getOp1())) = result;
+
+    // Prints the row of information for this instruction into the
+    // time table
+    printInstrInfo(instr, funcUnit, start, result, fetchStr.str(),
+            storeStr.str());
+}
+
+void CDC7600::printInstrInfo (const Instruction *instr,
+        const FunctionalUnit *funcUnit, const unsigned int start,
+        const unsigned int result, const std::string fetchStr,
+        const std::string storeStr) {
+    // Output some cool information about this instruction!
+    *m_out << instr->getWordNum() << CDC7600_OUTPUT_DELIM;
+    *m_out << instr->getInstrStr() << CDC7600_OUTPUT_DELIM;
+    *m_out << instr->getDescription() << CDC7600_OUTPUT_DELIM;
+    if (Instruction::LONG == instr->getType())
+        *m_out << "L" << CDC7600_OUTPUT_DELIM;
+    else
+        /* Implied: if (Instruction::SHORT == instr->getType()) */
+        *m_out << "S" << CDC7600_OUTPUT_DELIM;
+    *m_out << m_issue << CDC7600_OUTPUT_DELIM;
+    *m_out << start << CDC7600_OUTPUT_DELIM;
+    *m_out << result << CDC7600_OUTPUT_DELIM;
+    *m_out << funcUnit->getUnitReady() << CDC7600_OUTPUT_DELIM;
+    *m_out << fetchStr << CDC7600_OUTPUT_DELIM;
+    *m_out << storeStr << CDC7600_OUTPUT_DELIM;
+    *m_out << std::endl;
+}
+
 FunctionalUnit* CDC7600::getFunctionalUnit (const Instruction *instr) {
     FunctionalUnit *requestedUnit;
 
@@ -118,78 +197,114 @@ FunctionalUnit* CDC7600::getFunctionalUnit (const Instruction *instr) {
     return requestedUnit;
 }
 
-std::list<Register> CDC7600::getRegisterOperands (Instruction *instr) const {
-    std::list<Register> retVal;
+std::list<Instruction::register_t> CDC7600::getDependencyRegisters (
+        const Instruction *instr) const {
+    std::list<Instruction::register_t> retVal;
 
-    if ((unsigned int) NULL_OPERAND != instr->getOp1())
-        retVal.push_front(instr->getOp1());
+    if (instr->getOpType(2))
+        retVal.push_back(
+                *static_cast<const Instruction::register_t *>(instr->getOp2()));
+    if (instr->getOpType(3))
+        retVal.push_back(
+                *static_cast<const Instruction::register_t *>(instr->getOp3()));
+
+    // If it's a store instruction, add the dependency from the Xn register bank
+    if (Instruction::INC == instr->getOpcode()
+            && (Instruction::a6 == instr->getOp1()
+                    || Instruction::a7 == instr->getOp1())) {
+        Instruction::register_t temp = instr->getOp1();
+        temp = static_cast<Instruction::register_t>(temp - Instruction::a0);
+        retVal.push_back(temp);
+    }
 
     return retVal;
 }
 
-void CDC7600::runInstruction (Instruction *instr) {
-    unsigned int start, result, fetch, store;
-    std::stringstream fetchStr, storeStr;
+const Register CDC7600::getRegister (const Instruction::register_t reg) const {
+    Register result;
 
-    // Determine this instruction's functional unit and which operands it
-    // needs
-    FunctionalUnit *funcUnit = getFunctionalUnit(instr);
-    std::list<Register> usedOperands = getRegisterOperands(instr);
+    switch (reg) {
+        case Instruction::x0:
+        case Instruction::x1:
+        case Instruction::x2:
+        case Instruction::x3:
+        case Instruction::x4:
+        case Instruction::x5:
+        case Instruction::x6:
+        case Instruction::x7:
+            result = m_Rx[reg - Instruction::x0];
+            break;
+        case Instruction::a0:
+        case Instruction::a1:
+        case Instruction::a2:
+        case Instruction::a3:
+        case Instruction::a4:
+        case Instruction::a5:
+        case Instruction::a6:
+        case Instruction::a7:
+            result = m_Ra[reg - Instruction::a0];
+            break;
+        case Instruction::b0:
+        case Instruction::b1:
+        case Instruction::b2:
+        case Instruction::b3:
+        case Instruction::b4:
+        case Instruction::b5:
+        case Instruction::b6:
+        case Instruction::b7:
+            result = m_Rb[reg - Instruction::b0];
+    }
 
-    // Calculate start based on:
-    //     max(issue, functional unit ready, operands ready)
-    start = std::max(std::max(m_issue, funcUnit->getUnitReady()),
-            getResultsAvailable(&usedOperands));
-
-    // Calculate result
-    result = funcUnit->run(start);  // start + execution time
-
-    // Calculate fetch
-    if (Instruction::INC == instr->getOpcode()
-            && Instruction::a0 != instr->getOp1())
-        switch (instr->getOp1()) {
-            case Instruction::a1:
-            case Instruction::a2:
-            case Instruction::a3:
-            case Instruction::a4:
-            case Instruction::a5:
-                fetch = result + CDC7600_MEM_ACCESS_TIME;
-                fetchStr << fetch;
-                break;
-            case Instruction::a6:
-            case Instruction::a7:
-                store = result + CDC7600_MEM_ACCESS_TIME;
-                storeStr << store;
-                break;
-        }
-
-    // Output some cool information about this instruction!
-    *m_out << instr->getWordNum() << CDC7600_OUTPUT_DELIM;
-    *m_out << instr->getDescription() << CDC7600_OUTPUT_DELIM;
-    if (Instruction::LONG == instr->getType())
-        *m_out << "Long" << CDC7600_OUTPUT_DELIM;
-    else
-        *m_out << "Short" << CDC7600_OUTPUT_DELIM;
-    *m_out << m_issue << CDC7600_OUTPUT_DELIM;
-    *m_out << start << CDC7600_OUTPUT_DELIM;
-    *m_out << result << CDC7600_OUTPUT_DELIM;
-    *m_out << funcUnit->getUnitReady() << CDC7600_OUTPUT_DELIM;
-    *m_out << fetchStr.str() << CDC7600_OUTPUT_DELIM;
-    *m_out << storeStr.str() << CDC7600_OUTPUT_DELIM;
-    *m_out << std::endl;
+    return result;
 }
 
-unsigned int CDC7600::getResultsAvailable (std::list<Register> *registers) {
-    unsigned int ready;
+Register* CDC7600::getRegisterP (const Instruction::register_t reg) {
+    Register *result;
+
+    switch (reg) {
+        case Instruction::x0:
+        case Instruction::x1:
+        case Instruction::x2:
+        case Instruction::x3:
+        case Instruction::x4:
+        case Instruction::x5:
+        case Instruction::x6:
+        case Instruction::x7:
+            result = &(m_Rx[reg - Instruction::x0]);
+            break;
+        case Instruction::a0:
+        case Instruction::a1:
+        case Instruction::a2:
+        case Instruction::a3:
+        case Instruction::a4:
+        case Instruction::a5:
+        case Instruction::a6:
+        case Instruction::a7:
+            result = &(m_Ra[reg - Instruction::a0]);
+            break;
+        case Instruction::b0:
+        case Instruction::b1:
+        case Instruction::b2:
+        case Instruction::b3:
+        case Instruction::b4:
+        case Instruction::b5:
+        case Instruction::b6:
+        case Instruction::b7:
+            result = &(m_Rb[reg - Instruction::b0]);
+    }
+
+    return result;
+}
+
+unsigned int CDC7600::latestDependencyTime (
+        const std::list<Instruction::register_t> &registers) {
     unsigned int retVal = m_clock;
 
-    std::list<Register>::const_iterator iterator;
-    for (iterator = registers->begin(); iterator != registers->end();
+    std::list<Instruction::register_t>::const_iterator iterator;
+    for (iterator = registers.begin(); iterator != registers.end();
             ++iterator) {
-        ready = (Register) *iterator;
-
-        if (retVal < ready)
-            retVal = ready;
+        if (retVal < getRegister(*iterator))
+            retVal = getRegister(*iterator);
     }
 
     return retVal;

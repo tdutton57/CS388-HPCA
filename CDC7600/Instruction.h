@@ -10,6 +10,7 @@
 #define INSTRUCTION_H_
 
 #include <stdint.h>
+#include <sstream>
 #include <string>
 #include "CDC7600_Exceptions.h"
 
@@ -66,19 +67,19 @@ class Instruction {
                         m_type(0), m_reg(x0), m_imm(0) {
                 }
 
-                FlexableOp (const Instruction::register_t reg) :
-                        m_type(0), m_reg(reg), m_imm(0) {
+                FlexableOp (const int imm) :
+                        m_type(0), m_reg(x0), m_imm(imm) {
                 }
 
-                FlexableOp (const int imm) :
-                        m_type(1), m_reg(x0), m_imm(imm) {
+                FlexableOp (const Instruction::register_t reg) :
+                        m_type(1), m_reg(reg), m_imm(0) {
                 }
 
                 const void* get () const {
                     if (m_type)
-                        return (void *) &m_imm;
-                    else
                         return (void *) &m_reg;
+                    else
+                        return (void *) &m_imm;
                 }
 
                 bool getType () const {
@@ -86,7 +87,7 @@ class Instruction {
                 }
 
             protected:
-                bool m_type;
+                bool m_type;  // 0/false == immediate; 1/true == register
                 Instruction::register_t m_reg;
                 int m_imm;
         };
@@ -104,14 +105,14 @@ class Instruction {
                 const register_t op1, const FlexableOp &op2,
                 const FlexableOp &op3);
 
-//        static instructionType_t getInstrType (const uint32_t instruction);
-
         /**
          * @brief   Function to set the word number for this instruction
          */
         void setWordNum (const uint32_t wordNum) {
             m_wordNum = wordNum;
         }
+
+        std::string getInstrStr () const;
 
         /**
          * @brief   Function to return description string
@@ -145,7 +146,7 @@ class Instruction {
         /**
          * @brief   Accessor function to return the instruction's first operand
          */
-        uint32_t getOp1 () const {
+        register_t getOp1 () const {
             return m_op1;
         }
 
@@ -162,6 +163,8 @@ class Instruction {
         const void* getOp3 () const {
             return m_op3.get();
         }
+
+        bool getOpType (const uint8_t operand) const;
 
         /**
          * @brief   Function that determines whether two instructions are equal
@@ -192,5 +195,8 @@ class Instruction {
         FlexableOp m_op2;
         FlexableOp m_op3;
 };
+
+std::ostream& operator<< (std::ostream& s, const Instruction::register_t reg);
+std::ostream& operator<< (std::ostream& s, const Instruction::FlexableOp op);
 
 #endif /* INSTRUCTION_H_ */

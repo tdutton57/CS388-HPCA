@@ -10,10 +10,11 @@
 #define CDC7600_H_
 
 #include <iostream>
-#include <list>
 #include <algorithm>
 #include <sstream>
 #include <string>
+#include <vector>
+#include <list>
 #include "Instruction.h"
 #include "FunctionalUnit.h"
 #include "InstructionPipeline.h"
@@ -26,28 +27,125 @@
 
 typedef unsigned int Register;
 
+/**
+ * @brief: This class represents an instance of the CDC7600
+*/
 class CDC7600 {
     public:
+
+        /**
+         * @brief   Constructor which initializes the functional units
+         *          and program memory
+         *
+         * @param   out
+         * @param   program The list of instructions to be executed
+         * @param   instrCount
+        */
         CDC7600 (std::ostream *out, Instruction program[],
                 const unsigned int instrCount);
 
+        /**
+         * @brief   Destructor to delete an instance of the CDC7600
+        */
         ~CDC7600 ();
 
+        /**
+         * @brief   Runs the set of instructions
+         */
         int run ();
 
-        int runLoop (const int n);
+        /**
+         * @brief   Runs a set of instructions n times. This is used
+         *          for when there is a branch statement (as in program 3).
+         *          When there are branch statements, the instructions need
+         *          need to be run a certain number of times.
+         * @param   n The number of iterations for running the instructions
+         */
+        int run (const int n);
 
+        /**
+         * @brief   This will reset the CDC7600 so that it is ready to read
+         *          a new set of instructions. It will reset the program
+         *          counter, the clock cycles, issue time, the functional units,
+         *          and all registers
+         */
         void reset ();
 
     protected:
+        /**
+         * @brief   This is called by the run function in order to
+         *          run each individual instruction. This function determines
+         *          the clock cycles for the instruction issue, start, result,
+         *          unit ready, fetch and store. It calls the printInstrInfo
+         *          to print this information into the time table.
+         * @param   *instr A pointer to the instruction that will be run
+         */
+        void runInstruction (Instruction *instr);
+
+        /**
+         * @brief   This function initializes the data in the first row
+         *          of the time table. This row includes the column headers
+         *          which include the Word#, Instruction, Description, Length,
+         *          Issue, Start, Result, and so forth.
+         */
         void initOutput ();
 
+        /**
+         * @brief   Prints a row information pertaining to a particular
+         *          instruction into the time table
+         * @param   *instr A pointer to the instruction
+         * @param   *funcUnit A pointer to the functional unit required for
+         *          executing the instruction
+         * @param   start The number of clock cycles after the program is run
+         *          for when this instruction is started
+         * @param   result The number of clock cycles after the program is run
+         *          for when the result of this instruction is obtained
+         * @param   fetchStr If the instruction is a FETCH type instruction,
+         *          then this number will represent the number of clock cycles
+         *          after the program is run for when the result of this
+         *          instruction is fetched
+         * @param   storeStr If the instruction is a STORE type instruction,
+         *          then this number will represent the number of clock cycles
+         *          after the program is run for when the result of this
+         *          instruction is stored
+         */
+        void printInstrInfo (const Instruction *instr,
+                const FunctionalUnit *funcUnit, const unsigned int start,
+                const unsigned int result, const std::string fetchStr,
+                const std::string storeStr);
+
+        /**
+         * @brief   Returns the functional unit used for this instruction
+        */
         FunctionalUnit* getFunctionalUnit (const Instruction *instr);
-        std::list<Register> getRegisterOperands (Instruction *instr) const;
 
-        unsigned int getResultsAvailable (std::list<Register> *registers);
+        /**
+        * @brief   Returns the list of registers that could delay the
+        *          time to start executing the instruction
+        * @param   *instr A pointer to the instruction for which we want
+        *          to return its dependency registers
+        */
+        std::list<Instruction::register_t> getDependencyRegisters
+              (const Instruction *instr) const;
 
-        void runInstruction (Instruction *instr);
+        /**
+        * @brief
+        * @param   register_t
+        */
+        const Register getRegister (const Instruction::register_t reg) const;
+
+        /**
+        * @brief
+        * @param   register_t
+        */
+        Register* getRegisterP (const Instruction::register_t reg);
+
+        /**
+         * @brief
+         * @param   *register_t
+         */
+        unsigned int latestDependencyTime
+              (const std::list<Instruction::register_t> &registers);
 
     protected:
         std::ostream *m_out;
@@ -58,7 +156,6 @@ class CDC7600 {
 
         unsigned int m_clock;
         unsigned int m_issue;
-        unsigned int m_issueWord;
         std::vector<FunctionalUnit> m_funcUnits;
 
         Register m_Rx[CDC7600_REGISTER_BANK_SIZE];

@@ -99,6 +99,8 @@ uint8_t InstructionPipeline::readInstr (const unsigned int pc,
         }
     } /* implied: when m_prevPC == NULL_OPERAND, it is the first instruction */
 
+    m_prevPC = pc;
+
     return delay;
 }
 

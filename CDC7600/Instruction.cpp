@@ -24,11 +24,34 @@ Instruction::Instruction (const std::string description,
 
 }
 
+std::string Instruction::getInstrStr () const {
+    std::stringstream s;
+
+    s << m_op1 << "=" << m_op2;
+
+    switch (m_opcode) {
+        case Instruction::ADDF:
+        case Instruction::INC:
+            s << '+';
+            break;
+        case Instruction::MULF:
+            s << '*';
+            break;
+        case Instruction::SUBF:
+            s << '-';
+            break;
+        default:
+            s << '?';
+    }
+
+    s << m_op3;
+
+    return s.str();
+}
+
 // Operator==
 bool Instruction::operator== (const Instruction &rhs) {
     bool retVal = true;
-
-//     m_op2 == rhs.m_op2 && m_op3 == rhs.m_op3;
 
     // Check the instruction type, opcode, and first operand
     retVal &= m_type == rhs.m_type && m_opcode == rhs.m_opcode
@@ -65,6 +88,19 @@ bool Instruction::operator== (const Instruction &rhs) {
     return retVal;
 }
 
+bool Instruction::getOpType (const uint8_t operand) const {
+    switch (operand) {
+        case 2:
+            return m_op2.getType();
+            break;
+        case 3:
+            return m_op3.getType();
+            break;
+        default:
+            throw INVALID_INSTRUCTION_OPERAND;
+    }
+}
+
 //Operator!=
 bool Instruction::operator!= (Instruction &rhs) {
     return !(*this == rhs);
@@ -75,4 +111,22 @@ Instruction::type Instruction::getInstrType (const opcode_t opcode) {
         return LONG;
     else
         return SHORT;
+}
+
+std::ostream& operator<< (std::ostream& s, const Instruction::register_t reg) {
+    if (Instruction::x0 <= reg && reg <= Instruction::x7)
+        s << 'x' << static_cast<unsigned int>(reg - Instruction::x0);
+    else if (Instruction::a0 <= reg && reg <= Instruction::a7)
+        s << 'a' << static_cast<unsigned int>(reg - Instruction::a0);
+    else if (Instruction::b0 <= reg && reg <= Instruction::b7)
+        s << 'b' << static_cast<unsigned int>(reg - Instruction::b0);
+
+    return s;
+}
+
+std::ostream& operator<< (std::ostream& s, const Instruction::FlexableOp op) {
+    if (op.getType())
+        return s << *static_cast<const Instruction::register_t *>(op.get());
+    else
+        return s << *static_cast<const int *>(op.get());
 }

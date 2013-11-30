@@ -29,7 +29,7 @@ int main (int argc, char *argv[]) {
             << std::endl << "given set of instructions." << std::endl
             << std::endl;
 
-    // Prompt the user to select the program to run
+    // Prompt the user to select which program to run
     std::cout << "Select the input to this program from the list below."
             << std::endl;
 
@@ -60,7 +60,7 @@ int main (int argc, char *argv[]) {
                         << ">>> ";
                 std::cin >> n;
                 throw NOT_IMPLEMENTED_YET;
-                superPuter->runLoop(n);
+                superPuter->run(n);
                 break;
             default:
                 throw INVALID_INPUT;

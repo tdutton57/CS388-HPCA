@@ -32,6 +32,10 @@ FunctionalUnit::FunctionalUnit (const FunctionalUnit::type type) {
             m_segTime = 1;
     }
 
+    reset();
+}
+
+void FunctionalUnit::reset () {
     // Initially this functional unit is ready at time 0
     m_ready = 0;
 }

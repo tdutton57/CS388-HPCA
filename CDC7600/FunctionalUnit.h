@@ -43,6 +43,8 @@ class FunctionalUnit {
          */
         FunctionalUnit (const type type);
 
+        void reset ();
+
         /**
          * @brief   Run the functional unit and return the time for when the
          *          result is ready
@@ -61,7 +63,7 @@ class FunctionalUnit {
          *
          * @return  The time in clock cycles when the functional unit is ready
          */
-        unsigned int getUnitReady () {
+        unsigned int getUnitReady () const {
             return m_ready;
         }
 
