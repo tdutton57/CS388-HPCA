@@ -6,6 +6,8 @@
  * @email   david@stlswedespeed.com
  */
 
+// TODO: Check for write-after-write hazards!
+
 #include "CDC7600.h"
 
 CDC7600::CDC7600 (std::ostream *out, Instruction program[],
@@ -29,7 +31,7 @@ CDC7600::~CDC7600 () {
     m_out = NULL;
 }
 
-int CDC7600::run () {
+void CDC7600::run () {
     Instruction *instr;
 
     if (m_firstRun) {
@@ -37,37 +39,26 @@ int CDC7600::run () {
         m_firstRun = !m_firstRun;
     }
 
-    for (unsigned int i = 0; i < m_instrMem.size(); ++i) {
+    while (m_pc < m_instrMem.size()) {
         m_issue += m_instrMem.readInstr(m_pc, instr);
 
         // Run one instruction
         runInstruction(instr);
         ++m_pc;
     }
-
-    return 0;
 }
 
-int CDC7600::run (const int n) {
-    int sum = 0;
-
-    // Preparation for looping!
-    // Two main things must be done:
-    //   1) Fetch the loop counter
-    //   2) Fetch the starting address of each vector (Y and X)
-    //   3) Fetch all constants (A, B, C)
-    Instruction initFetches("", Instruction::INC, Instruction::x0,
-            Instruction::x0, Instruction::x0);  // Simulate a fetch
-    for (uint8_t i = 0; i < 6; ++i)
-        // All four fetches would be independent, so we'll just simulate
-        // executing the same instruction four times
-        runInstruction(&initFetches);
+void CDC7600::run (const unsigned int n) {
+    if (m_firstRun) {
+        initOutput();
+        m_firstRun = !m_firstRun;
+    }
 
     // Loop over the function N times
-    for (short i = 0; i < n; ++i)
-        sum += this->run();
-
-    return sum;
+    for (unsigned short i = 0; i < n; ++i) {
+        this->run();
+        m_pc = 10;
+    }
 }
 
 void CDC7600::reset () {
@@ -80,15 +71,14 @@ void CDC7600::reset () {
     for (unsigned int i = 0; i < m_funcUnits.size(); ++i)
         m_funcUnits[i].reset();
 
-    // Initialize all registers to NULL_OPERAND (signaling that their values are
-    // uninitialized which is useful during error-checking)
+    // Initialize all registers to 0
     Register **banks = new Register*[3];
     banks[0] = m_Rx;
     banks[1] = m_Ra;
     banks[2] = m_Rb;
     for (uint8_t bank = 0; bank < 3; ++bank)
         for (uint8_t reg = 0; reg < CDC7600_REGISTER_BANK_SIZE; ++reg)
-            banks[bank][reg] = (Register) NULL_OPERAND;
+            banks[bank][reg] = 0;
     delete[] banks;
 }
 
@@ -121,7 +111,7 @@ void CDC7600::runInstruction (Instruction *instr) {
     start = std::max(std::max(m_issue, funcUnit->getUnitReady()), last);
 
     // Calculate result and run the functional unit to calculate unit ready
-    result = funcUnit->run(start);  // start + execution time
+    result = funcUnit->run(start);    // start + execution time
 
     // Calculate fetch or store
     if (Instruction::INC == instr->getOpcode()
@@ -190,8 +180,10 @@ FunctionalUnit* CDC7600::getFunctionalUnit (const Instruction *instr) {
         case Instruction::ADDF:
             return &(m_funcUnits[FunctionalUnit::FU_ADDF]);
             break;
+        case Instruction::BNQ:
+            return &(m_funcUnits[FunctionalUnit::FU_BOOL]);
         default:
-            requestedUnit = NULL;
+            throw FUNCTIONAL_UNIT_NONEXISTANT;
     }
 
     return requestedUnit;

@@ -16,4 +16,5 @@ const std::string CDC7600_EXCEPTION_STRINGS[TOTAL_CDC7600_EXCEPTIONS] = {
         "Functional unit not ready!",
         "Error: File cannot be opened",
         "Instruction operand is not valid",
-        "Out of range: Instruction stack" };
+        "Out of range: Instruction stack",
+        "A functional unit was requested which doesn't exist"};

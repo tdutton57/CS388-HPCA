@@ -9,6 +9,7 @@
 #include "cdc7600_main.h"
 
 int main (int argc, char *argv[]) {
+    unsigned int userInput;
     CDC7600 *superPuter;
 
 #ifndef DEBUG
@@ -36,31 +37,28 @@ int main (int argc, char *argv[]) {
     std::cout << "\t1. Y = A*X^2 + B" << std::endl;
     std::cout << "\t2. Y = A*X^2 + B*X + c" << std::endl;
     std::cout << "\t3. Y = A*X^2 + B*X + c (X and Y are vectors)" << std::endl;
-    std::cout << ">>> ";
 
-    unsigned int selectedProgram;
-    std::cin >> selectedProgram;
+    std::cout << ">>> ";
+    std::cin >> userInput;
 
     // Run the selected program
     try {
-        switch (selectedProgram) {
+        switch (userInput) {
             case 1:
-                superPuter = new CDC7600(&OUTPUT, program1,
-                        sizeof(program1) / sizeof(*program1));
+                superPuter = new CDC7600(&OUTPUT, program1, sizeof(program1) / sizeof(*program1));
                 superPuter->run();
                 break;
             case 2:
-                superPuter = new CDC7600(&OUTPUT, program2,
-                        sizeof(program2) / sizeof(*program2));
+                superPuter = new CDC7600(&OUTPUT, program2, sizeof(program2) / sizeof(*program2));
                 superPuter->run();
                 break;
             case 3:
-                unsigned int n;
                 std::cout << "How long are the vectors X and Y?" << std::endl
                         << ">>> ";
-                std::cin >> n;
-                throw NOT_IMPLEMENTED_YET;
-                superPuter->run(n);
+                std::cin >> userInput;
+
+                superPuter = new CDC7600(&OUTPUT, program3, sizeof(program3) / sizeof(*program3));
+                superPuter->run(userInput);
                 break;
             default:
                 throw INVALID_INPUT;

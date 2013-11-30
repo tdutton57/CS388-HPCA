@@ -50,18 +50,19 @@ class CDC7600 {
         ~CDC7600 ();
 
         /**
-         * @brief   Runs the set of instructions
+         * @brief   Runs the set of instructions once
          */
-        int run ();
+        void run ();
 
         /**
          * @brief   Runs a set of instructions n times. This is used
          *          for when there is a branch statement (as in program 3).
          *          When there are branch statements, the instructions need
          *          need to be run a certain number of times.
+         *
          * @param   n The number of iterations for running the instructions
          */
-        int run (const int n);
+        void run (const unsigned int n);
 
         /**
          * @brief   This will reset the CDC7600 so that it is ready to read
@@ -73,12 +74,15 @@ class CDC7600 {
 
     protected:
         /**
-         * @brief   This is called by the run function in order to
-         *          run each individual instruction. This function determines
-         *          the clock cycles for the instruction issue, start, result,
-         *          unit ready, fetch and store. It calls the printInstrInfo
-         *          to print this information into the time table.
-         * @param   *instr A pointer to the instruction that will be run
+         * @brief       Simulate execution of a single instruction with output
+         *
+         * @detailed    This is called by the run function in order to run each
+         *              individual instruction. This function determines the
+         *              clock cycles for the instruction issue, start, result,
+         *              unit ready, fetch and store. It calls the printInstrInfo
+         *              to print this information into the time table.
+         *
+         * @param       *instr A pointer to the instruction that will be run
          */
         void runInstruction (Instruction *instr);
 
@@ -93,6 +97,7 @@ class CDC7600 {
         /**
          * @brief   Prints a row information pertaining to a particular
          *          instruction into the time table
+         *
          * @param   *instr A pointer to the instruction
          * @param   *funcUnit A pointer to the functional unit required for
          *          executing the instruction
@@ -128,22 +133,10 @@ class CDC7600 {
         std::list<Instruction::register_t> getDependencyRegisters
               (const Instruction *instr) const;
 
-        /**
-        * @brief
-        * @param   register_t
-        */
         const Register getRegister (const Instruction::register_t reg) const;
 
-        /**
-        * @brief
-        * @param   register_t
-        */
         Register* getRegisterP (const Instruction::register_t reg);
 
-        /**
-         * @brief
-         * @param   *register_t
-         */
         unsigned int latestDependencyTime
               (const std::list<Instruction::register_t> &registers);
 

@@ -31,7 +31,8 @@ class Instruction {
             ADDF = 030,  // Floating point add
             SUBF = 031,  // Floating-point subtract
             MULF = 040,  // Floating-point multiply
-            INC = 050  // Increment
+            INC = 050,  // Increment
+            BNQ = 05  // Branch if not equal
         } opcode_t;
 
         typedef enum _register_t {
