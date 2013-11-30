@@ -6,8 +6,6 @@
  * @email   david@stlswedespeed.com
  */
 
-// TODO: Check for write-after-write hazards!
-
 #include "CDC7600.h"
 
 CDC7600::CDC7600 (std::ostream *out, Instruction program[],
@@ -135,8 +133,11 @@ void CDC7600::runInstruction (Instruction *instr) {
                 storeStr << store;
                 break;
             default:
-                *(getRegisterP(instr->getOp1())) = result;
+                break; // Do nothing special for a0
         }
+
+    if (result <= getRegister(instr->getOp1()))
+        *(getRegisterP(instr->getOp1())) += 1;
     else
         *(getRegisterP(instr->getOp1())) = result;
 
