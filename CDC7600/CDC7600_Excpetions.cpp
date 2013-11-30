@@ -14,4 +14,6 @@ const std::string CDC7600_EXCEPTION_STRINGS[TOTAL_CDC7600_EXCEPTIONS] = {
         "Sorry, that hasn't been implemented yet!",
         "Invalid input!",
         "Functional unit not ready!",
-        "Error: File cannot be opened"};
+        "Error: File cannot be opened",
+        "Instruction operand is not valid",
+        "Out of range: Instruction stack" };

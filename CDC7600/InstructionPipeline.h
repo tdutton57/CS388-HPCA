@@ -13,16 +13,32 @@
 
 #include <cstddef>
 #include <vector>
+#include <utility>
+#include <list>
 #include "Instruction.h"
 #include "CDC7600_Exceptions.h"
-
-// TODO TODO TODO: MUST IMPLEMENT INSTRUCTION STACK!!!
 
 /*
  * @brief   This class represents the Instruction Pipeline for the CDC6000
  *          series of processors
  */
 class InstructionPipeline {
+    protected:
+        class InstructionStack {
+            public:
+                void clear ();
+
+                bool contains (const unsigned int pc);
+
+                Instruction retrieve (const unsigned int pc);
+
+                void push_back (
+                        const std::vector<std::pair<unsigned int, Instruction> > &word);
+
+            protected:
+                std::list<std::vector<std::pair<unsigned int, Instruction> > > m_stack;
+        };
+
     public:
         InstructionPipeline ();
         ~InstructionPipeline ();
@@ -49,8 +65,12 @@ class InstructionPipeline {
         std::string getInstrStr () const;
 
     protected:
+        void pushToStack (const unsigned int pc);
+
+    protected:
         std::vector<Instruction> m_instrMem;
         unsigned int m_prevPC;
+        InstructionStack m_stack;
 };
 
 #endif /* INSTRUCTIONPIPELINE_H_ */

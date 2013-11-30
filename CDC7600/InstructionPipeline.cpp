@@ -10,9 +10,48 @@
 
 #include "InstructionPipeline.h"
 
-#define DEFAULT_DELAY               1
-#define PC_INC_ADD_TIME             1
-#define MEM_ACCESS_ADD_TIME         2
+#define DEFAULT_DELAY                   1
+#define PC_INC_ADD_TIME                 1
+#define MEM_ACCESS_ADD_TIME             2
+#define INSTRUCTION_STACK_DELAY_TIME    0
+#define INSTRUCTION_STACK_SIZE          10
+
+void InstructionPipeline::InstructionStack::clear () {
+    m_stack.clear();
+}
+
+bool InstructionPipeline::InstructionStack::contains (const unsigned int pc) {
+    std::list<std::vector<std::pair<unsigned int, Instruction> > >::const_iterator iterator;
+    for (iterator = m_stack.begin(); iterator != m_stack.end(); ++iterator)
+        for (unsigned int i = 0; i < iterator->size(); ++i)
+            if (pc == (*iterator)[i].first)
+                return true;
+    return false;
+}
+
+Instruction InstructionPipeline::InstructionStack::retrieve (
+        const unsigned int pc) {
+    Instruction retVal;
+    std::list<std::vector<std::pair<unsigned int, Instruction> > >::iterator iterator;
+    for (iterator = m_stack.begin(); iterator != m_stack.end(); ++iterator)
+        for (unsigned int i = 0; i < iterator->size(); ++i)
+            if (pc == (*iterator)[i].first) {
+                retVal = (*iterator)[i].second;
+                m_stack.erase(iterator);
+                push_back(*iterator);
+                return retVal;
+            }
+
+    throw INSTRUCTION_STACK_OOR;
+}
+
+void InstructionPipeline::InstructionStack::push_back (
+        const std::vector<std::pair<unsigned int, Instruction> > &word) {
+    m_stack.push_back(word);
+
+    if (INSTRUCTION_STACK_SIZE < m_stack.size())
+        m_stack.pop_front();
+}
 
 InstructionPipeline::InstructionPipeline () {
     m_prevPC = NULL_OPERAND;
@@ -25,6 +64,7 @@ InstructionPipeline::~InstructionPipeline () {
 void InstructionPipeline::clear () {
     m_instrMem.clear();
     m_prevPC = NULL_OPERAND;
+    m_stack.clear();
 }
 
 void InstructionPipeline::load (Instruction &instr) {
@@ -69,6 +109,7 @@ void InstructionPipeline::load (Instruction program[],
 uint8_t InstructionPipeline::readInstr (const unsigned int pc,
         Instruction* &nextInstr) {
     uint8_t delay = DEFAULT_DELAY;
+    bool alreadyInsterted = false;
 
     // Grab requested instruction
     nextInstr = &(m_instrMem[pc]);
@@ -79,11 +120,18 @@ uint8_t InstructionPipeline::readInstr (const unsigned int pc,
 
         // If the next instruction resides in a different word than the
         // current, a memory access is required
-        if (prevInstr->getWordNum() != nextInstr->getWordNum())
-            delay += MEM_ACCESS_ADD_TIME;
+        if (prevInstr->getWordNum() != nextInstr->getWordNum()) {
+            if (m_stack.contains(pc)) {
+                m_stack.retrieve(pc);
+                nextInstr = &(m_instrMem[pc]);
+                alreadyInsterted = true;
+                delay += INSTRUCTION_STACK_DELAY_TIME;
+            } else
+                delay += MEM_ACCESS_ADD_TIME;
+        }
 
-        // Calculate delay
-        // Check if it's a branch
+        // On occasion, a branch will cause a special delay where the PC is
+        // modified in a way other than simple increment
         if (prevInstr->getWordNum() > nextInstr->getWordNum())
             switch (nextInstr->getOpcode()) {
                 // TODO: Should probably figure out the extra delays due to branching
@@ -100,6 +148,8 @@ uint8_t InstructionPipeline::readInstr (const unsigned int pc,
     } /* implied: when m_prevPC == NULL_OPERAND, it is the first instruction */
 
     m_prevPC = pc;
+    if (!alreadyInsterted)
+        pushToStack(pc);
 
     return delay;
 }
@@ -110,4 +160,34 @@ unsigned int InstructionPipeline::size () const {
 
 std::string InstructionPipeline::getInstrStr () const {
     return "";
+}
+
+void InstructionPipeline::pushToStack (const unsigned int pc) {
+    // Can only push whole 60-bit words, not individual instructions;
+    // To do this, we must determine what instructions go along with the one
+    // pointed to by the PC (though this would have been easier with a different
+    // setup for m_instrMem, it would have made other things much more
+    // difficult)
+    std::vector<std::pair<unsigned int, Instruction> > word;
+    unsigned int tempPC = pc;
+    std::vector<Instruction>::const_iterator iterator = m_instrMem.begin();
+
+    advance(iterator, pc);
+
+    // Decrement the iterator to the beginning of the current instruction word
+    while (0 != tempPC && iterator->getWordNum() == m_instrMem[pc].getWordNum()) {
+        --iterator;
+        --tempPC;
+    }
+
+    // Loop through all instructions in the current word and add them to the
+    // `word` variable, which will then be loaded onto the instruction stack
+    while (m_instrMem.size() > tempPC
+            && iterator->getWordNum() == m_instrMem[pc].getWordNum()) {
+        word.push_back(std::pair<unsigned int, Instruction>(tempPC, *iterator));
+        ++tempPC;
+        ++iterator;
+    }
+
+    m_stack.push_back(word);
 }

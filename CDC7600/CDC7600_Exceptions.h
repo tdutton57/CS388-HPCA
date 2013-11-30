@@ -19,6 +19,7 @@ typedef enum _cdc7600_exception {
     FUNCTIONAL_UNIT_NOT_READY,
     FILE_DOES_NOT_EXIST,
     INVALID_INSTRUCTION_OPERAND,
+    INSTRUCTION_STACK_OOR,  /** Instruction stack out-of-range */
     TOTAL_CDC7600_EXCEPTIONS
 } cdc7600_exception;
 
