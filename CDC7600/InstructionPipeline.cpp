@@ -73,23 +73,28 @@ uint8_t InstructionPipeline::readInstr (const unsigned int pc,
     Instruction *prevInstr = &(m_instrMem[m_prevPC]);  // Previous instruction
     nextInstr = &(m_instrMem[pc]);  // Requested instruction
 
+    // If the next instruction resides in a different word than the
+    // current, a memory access is required
+    if (prevInstr->getWordNum() != nextInstr->getWordNum())
+        delay += MEM_ACCESS_ADD_TIME;
+
     // Calculate delay
     if ((unsigned int) NULL_OPERAND != m_prevPC) {
-        // In case of a branch, do something WEIRD
+        // Check if it's a branch
         if (prevInstr->getWordNum() > nextInstr->getWordNum())
-            ;  // TODO: Determine delay due to PC "increment" (not really inc)
+            switch (nextInstr->getOpcode()) {
+                // TODO: Should probably figure out the extra delays due to branching
+                default:
+                    break;
+            }
         else {
             // If previous instruction was a long instruction, add an extra
             // clock cycle to the delay
             if (Instruction::LONG == prevInstr->getType())
                 delay += PC_INC_ADD_TIME;
 
-            // If the next instruction resides in a different word than the
-            // current, a memory access is required
-            if (prevInstr->getWordNum() != nextInstr->getWordNum())
-                delay += MEM_ACCESS_ADD_TIME;
         }
-    }
+    } /* implied: when m_prevPC == NULL_OPERAND, it is the first instruction */
 
     return delay;
 }

@@ -12,6 +12,7 @@
 #define FUNCTIONALUNIT_H_
 
 #include <stdint.h>
+#include "CDC7600_Exceptions.h"
 
 /**
  * @brief   This class represents one of several functional units used by the

@@ -14,6 +14,7 @@
 #include <cstddef>
 #include <vector>
 #include "Instruction.h"
+#include "CDC7600_Exceptions.h"
 
 /*
  * @brief   This class represents the Instruction Pipeline for the CDC6000
@@ -21,9 +22,9 @@
  */
 class InstructionPipeline {
     public:
-        InstructionPipeline();
-        ~InstructionPipeline();
-        void clear();
+        InstructionPipeline ();
+        ~InstructionPipeline ();
+        void clear ();
 
         void load (Instruction &instr);
 

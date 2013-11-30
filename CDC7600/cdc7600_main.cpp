@@ -18,37 +18,49 @@ int main (int argc, char *argv[]) {
 
     // Print a greeting
     std::cout
-            << "This program will simulate the CDC7600 and produce the time table "
-                    "for a given set of instructions.\n";
+            << "This program will simulate the CDC7600 and produce the time table for a"
+            << std::endl << "given set of instructions." << std::endl
+            << std::endl;
 
     // Prompt the user to select the program to run
-    std::cout << "Select the input to this program from the list below.\n"
-            << "Enter just the number that corresponds to the equation.\n";
+    std::cout << "Select the input to this program from the list below."
+            << std::endl;
 
-    std::cout << "1. Y = A*X^2 + B\n";
-    std::cout << "2. Y = A*X^2 + B*X + c\n";
-    std::cout << "3. Y = A*X^2 + B*X + c (X and Y are vectors)\n";
+    std::cout << "\t1. Y = A*X^2 + B" << std::endl;
+    std::cout << "\t2. Y = A*X^2 + B*X + c" << std::endl;
+    std::cout << "\t3. Y = A*X^2 + B*X + c (X and Y are vectors)" << std::endl;
+    std::cout << ">>> ";
 
     unsigned int selectedProgram;
     std::cin >> selectedProgram;
 
     // Run the selected program
-    switch (selectedProgram) {
-        case 1:
-            superPuter = new CDC7600(&std::cout, program1,
-                    sizeof(program1) / sizeof(*program1));
-            break;
-        case 2:
-            superPuter = new CDC7600(&std::cout, program2,
-                    sizeof(program2) / sizeof(*program2));
-            break;
-        case 3:
-            break;
-        default:
-            throw "Invalid input!";
+    try {
+        switch (selectedProgram) {
+            case 1:
+                superPuter = new CDC7600(&std::cout, program1,
+                        sizeof(program1) / sizeof(*program1));
+                superPuter->run();
+                break;
+            case 2:
+                superPuter = new CDC7600(&std::cout, program2,
+                        sizeof(program2) / sizeof(*program2));
+                superPuter->run();
+                break;
+            case 3:
+                unsigned int n;
+                std::cout << "How long are the vectors X and Y?" << std::endl
+                        << ">>> ";
+                std::cin >> n;
+                throw NOT_IMPLEMENTED_YET;
+                superPuter->runLoop(n);
+                break;
+            default:
+                throw INVALID_INPUT;
+        }
+    } catch (cdc7600_exception &e) {
+        std::fprintf(stderr, CDC7600_EXCEPTION_STRINGS[e].c_str());
     }
-
-    superPuter->run();
 
     return 0;
 }
@@ -59,7 +71,7 @@ Instruction* readFile (int argc, char *argv[]) {
     std::string filename;
     std::vector<std::string> lines;
 
-    // Open either the file passed in as the argument, or a hard-coded test file
+// Open either the file passed in as the argument, or a hard-coded test file
     if (0 == argc) {
         filename = "test.bin";
 
@@ -67,22 +79,22 @@ Instruction* readFile (int argc, char *argv[]) {
         filename = std::string(argv[0]);
     }
 
-    // Open the file for reading...
+// Open the file for reading...
     f.open(filename.c_str(), std::ios::in | std::ios::binary);
 
-    // Throw an error if the given file path does not exist
+// Throw an error if the given file path does not exist
     if (!(f.is_open())) {
         throw "Error: File '" + filename + "' cannot be opened";
     }
 
-    // Read in all lines of the program
+// Read in all lines of the program
     std::string line;
     do {
         std::getline(f, line);
         lines.push_back(line);
     } while (!(f.eof()));
 
-    // Loop through every line of the program and decode the mess
+// Loop through every line of the program and decode the mess
     program = new Instruction[lines.size()];
     for (unsigned int i = 0; i < lines.size(); ++i) {
         // TODO: Write huge lookup tables that do this correctly

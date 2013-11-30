@@ -39,7 +39,7 @@ FunctionalUnit::FunctionalUnit (const FunctionalUnit::type type) {
 unsigned int FunctionalUnit::run (const unsigned int startTime) {
     // Throw an error if the functional unit is busy
     if (m_ready > startTime)
-        throw "Functional unit not ready!";
+        throw FUNCTIONAL_UNIT_NOT_READY;
 
     // Update the time for when the functional unit
     // is ready to be used again

@@ -11,6 +11,7 @@
 
 #include <stdint.h>
 #include <string>
+#include "CDC7600_Exceptions.h"
 
 #define NULL_OPERAND    -1
 
@@ -21,11 +22,15 @@
 class Instruction {
     public:
         typedef enum _type {
-            SHORT, LONG
+            SHORT,
+            LONG
         } type;
 
         typedef enum _opcode_t {
-            INC = 050, MULF = 040, ADDF = 030, SUBF = 031
+            ADDF = 030,  // Floating point add
+            SUBF = 031,  // Floating-point subtract
+            MULF = 040,  // Floating-point multiply
+            INC = 050  // Increment
         } opcode_t;
 
         typedef enum _register_t {

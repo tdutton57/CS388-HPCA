@@ -17,6 +17,7 @@
 #include "Instruction.h"
 #include "FunctionalUnit.h"
 #include "InstructionPipeline.h"
+#include "CDC7600_Exceptions.h"
 
 #define CDC7600_REGISTER_BANK_SIZE    8
 #define CDC7600_WORDS_PER_LONGWORD    2
