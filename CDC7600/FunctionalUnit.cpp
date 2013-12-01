@@ -42,37 +42,37 @@ FunctionalUnit::FunctionalUnit (const FunctionalUnit::type type) {
         //floating point multiplier (2x)
         case FU_MULF:
             m_execTime = 5;
-            m_segTime = 2;
+            m_segTime = 5;
             break;
 
         //floating point divide
         case FU_DIVF:
             m_execTime = 34;
-            m_segTime = 1;
+            m_segTime = 34;
             break;
 
         //floating point add
         case FU_ADDF:
             m_execTime = 4;
-            m_segTime = 3;
+            m_segTime = 4;
             break;
 
         //"long" integer add
         case FU_LNGADD:
             m_execTime = 2;
-            m_segTime = 1;
+            m_segTime = 2;
             break;
 
         //incrementers (2 copies; performed memory load/store)
         case FU_INC:
             m_execTime = 3;
-            m_segTime = 1;
+            m_segTime = 3;
             break;
 
-        //shift boolean and branch
+        //shift boolean and branch integer Add
         case default:
             m_execTime = 3;
-            m_segTime = 1;
+            m_segTime = 3;
 
     }
     reset();

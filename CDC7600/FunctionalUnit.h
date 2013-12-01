@@ -23,7 +23,7 @@ class FunctionalUnit {
         // These are the functional unit types for the
         // CDC7600
         typedef enum _fu_t {
-            FU_ADD,
+            FU_ADDL,
             FU_ADDF,
             FU_MULF,
             FU_DIVF,

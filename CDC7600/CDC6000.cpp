@@ -326,37 +326,27 @@ FunctionalUnit* CDC7600::getFunctionalUnit (const Instruction *instr) {
 FunctionalUnit* CDC6600::getFunctionalUnit (const Instruction *instr) {
     // TODO: DO me! :D
     //TL;DR 
-    //it's the same 
-
-    //Load store ops (no F.U) incriment also does load stores, there is some magical hardware and it's constantly
-    // montoring a 1-7 when it sees one change, it reads the new mod value and goes and grab that value from meory and stores it.
-    //registers A1-A5 are used for loading into the reg file and A6 & A7 are used for storing in new memory
-    //if you modify the value in registers A1-A5 will load and will grab the value grabs value in A1 uses it as the address grabs value at address and stores in X1
-    //anytime you modify A1-A5 you are also modifying X1-X5 indirectly.  
-    //modify the functional unit class 
-    //modify the constructor for the 6600
-    //construct in constructor
     FunctionalUnit *requestedUnit;
     switch(instr->getOpcode()) {
         
         //floating point multiply (2 copies)
         case Instruction::INC
             //if the first incriment is busy,
-            //use the other incrimenter
-                
+            //use the other incrimenter      
         break;
+    
     //floating point divide
     case Instruction::DIVF:
         requestedUnit = &(m_functionalUnits[FunctionalUnit::FU_DIVF]);    
         break;
-
     //floating point add
     case Instruction ADDF:
         requestedUnit = &(m_functionalUnits[FunctionalUnit::FU_ADDF]);
         break;
 
     //"long" integer add
-    case Integer::
+    case Integer::ADDI
+        requestUnit = &(m_functionalUnits[FunctionalUnit::FU_ADDI]);
         break;
 
     //incrementers (2 copies; performed memory load/store)
@@ -364,15 +354,15 @@ FunctionalUnit* CDC6600::getFunctionalUnit (const Instruction *instr) {
         break;
 
     //shift
-    case
+    case Instruction::SHIFT:
         break;
 
     //boolean logic
-    case
+    case Instruction::BOOL:
         break;
 
     //branch
-    case
+    case 
         break;
 
     default:
@@ -381,3 +371,34 @@ FunctionalUnit* CDC6600::getFunctionalUnit (const Instruction *instr) {
 
     return requestedUnit;
 }
+
+unsigned int CDC6600::getNumFunctionalUnit(const FunctionalUnit::type unit) {
+    switch(unit) {
+        case FunctionalUnit::ADDL:
+            return CDC6600_NUM_ADDL;
+        case FunctionalUnit::ADDF:
+            return CDC6600_NUM_ADDF;
+        case FunctionalUnit::MULF:
+            return CDC6600_NUM_MULF;
+        case FunctionalUnit::DIVF:
+            return CDC6600_NUM_DIVF;
+        case FunctionalUnit::INC:
+            return CDC6600_NUM_INC;
+        case FunctionalUnit::BOOL
+            return CDC6600_NUM_BOOL;
+        case FunctionalUnit::BRANCH:
+            return CDC6600_NUM_BRANCH;
+        case FunctionalUnit::SHIFT
+            return CDC6600_NUM_SHIFT;
+        default:
+            throw CDC6600_NO_FUNCTIONAL_UNIT;
+}
+
+           
+               
+              
+          
+            
+             
+             
+CDC6600_NUM_DIVF              
