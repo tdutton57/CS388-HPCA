@@ -39,6 +39,7 @@ void CDC7600::run () {
 
     while (m_pc < m_instrMem.size()) {
         m_issue += m_instrMem.readInstr(m_pc, instr);
+        m_issue = std::max(m_issue, getFunctionalUnit(instr)->getUnitReady());
 
         // Run one instruction
         runInstruction(instr);
@@ -105,9 +106,8 @@ void CDC7600::runInstruction (Instruction *instr) {
             instr);
 
     // Calculate start based on:
-    //     max(issue, functional unit ready, operands ready)
-    unsigned int last = latestDependencyTime(usedOperands);
-    start = std::max(std::max(m_issue, funcUnit->getUnitReady()), last);
+    //     max(issue, operands ready)
+    start = std::max(m_issue, latestDependencyTime(usedOperands));
 
     // Calculate result and run the functional unit to calculate unit ready
     result = funcUnit->run(start);    // start + execution time
