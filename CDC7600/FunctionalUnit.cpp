@@ -26,6 +26,10 @@ FunctionalUnit::FunctionalUnit (const FunctionalUnit::type type) {
             m_execTime = 3;
             m_segTime = 3;
             break;
+        case FU_ADDF:
+            m_execTime = 4;
+            m_segTime = 1;
+            break;
         default:
             // Case for FIXED_ADD, FLOAT_ADD, INC, POP_COUNT, BOOL, and SHIFT types
             m_execTime = 2;
