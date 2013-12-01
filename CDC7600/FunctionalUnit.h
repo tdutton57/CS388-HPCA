@@ -55,7 +55,8 @@ class FunctionalUnit {
          * @return  Clock cycle when the result is ready after using the
          *          functional unit
          */
-        unsigned int run (const unsigned int startTime);
+        unsigned int run (const unsigned int startTime,
+                const unsigned int outputRegUnlocked);
 
         /**
          * @brief   Function that returns the time for when the functional

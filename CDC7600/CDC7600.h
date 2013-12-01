@@ -25,12 +25,40 @@
 #define CDC7600_MEM_ACCESS_TIME       4
 #define CDC7600_OUTPUT_DELIM          ','
 
-typedef unsigned int Register;
-
 /**
  * @brief: This class represents an instance of the CDC7600
-*/
+ */
 class CDC7600 {
+    protected:
+        class Register {
+            public:
+                Register () : m_readReady(0), m_lock(0) {}
+
+                void reset () {
+                    m_readReady = m_lock = 0;
+                }
+
+                unsigned int getLock () const {
+                    return m_lock;
+                }
+
+                void setLock (const unsigned int lock) {
+                    m_lock = lock;
+                }
+
+                unsigned int getReadReady () const {
+                    return m_readReady;
+                }
+
+                void setReadReady (const unsigned int readReady) {
+                    m_readReady = readReady;
+                }
+
+            protected:
+                unsigned int m_readReady;  // Value ready to be read at this clock cycle
+                unsigned int m_lock;  // Lock this register from being written until a specific clock cycle
+        };
+
     public:
 
         /**
@@ -133,9 +161,9 @@ class CDC7600 {
         std::list<Instruction::register_t> getDependencyRegisters
               (const Instruction *instr) const;
 
-        const Register getRegister (const Instruction::register_t reg) const;
+        const CDC7600::Register getRegister (const Instruction::register_t reg) const;
 
-        Register* getRegisterP (const Instruction::register_t reg);
+        CDC7600::Register* getRegisterP (const Instruction::register_t reg);
 
         unsigned int latestDependencyTime
               (const std::list<Instruction::register_t> &registers);
@@ -151,9 +179,9 @@ class CDC7600 {
         unsigned int m_issue;
         std::vector<FunctionalUnit> m_funcUnits;
 
-        Register m_Rx[CDC7600_REGISTER_BANK_SIZE];
-        Register m_Ra[CDC7600_REGISTER_BANK_SIZE];
-        Register m_Rb[CDC7600_REGISTER_BANK_SIZE];
+        CDC7600::Register m_Rx[CDC7600_REGISTER_BANK_SIZE];
+        CDC7600::Register m_Ra[CDC7600_REGISTER_BANK_SIZE];
+        CDC7600::Register m_Rb[CDC7600_REGISTER_BANK_SIZE];
 };
 
 #endif /* CDC7600_H_ */

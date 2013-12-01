@@ -71,13 +71,13 @@ void CDC7600::reset () {
         m_funcUnits[i].reset();
 
     // Initialize all registers to 0
-    Register **banks = new Register*[3];
+    CDC7600::Register **banks = new CDC7600::Register*[3];
     banks[0] = m_Rx;
     banks[1] = m_Ra;
     banks[2] = m_Rb;
     for (uint8_t bank = 0; bank < 3; ++bank)
         for (uint8_t reg = 0; reg < CDC7600_REGISTER_BANK_SIZE; ++reg)
-            banks[bank][reg] = 0;
+            banks[bank][reg].reset();
     delete[] banks;
 }
 
@@ -109,8 +109,18 @@ void CDC7600::runInstruction (Instruction *instr) {
     //     max(issue, operands ready)
     start = std::max(m_issue, latestDependencyTime(usedOperands));
 
+    // Lock read operands until start
+    std::list<Instruction::register_t>::iterator iterator;
+    for (iterator = usedOperands.begin(); iterator != usedOperands.end();
+            ++iterator)
+        getRegisterP(*iterator)->setLock(start);
+
+    // Check for Write-After-Read hazards by determining when the output
+    // register is available for writing again
+    unsigned int registerUnlock = getRegister(instr->getOp1()).getLock();
+
     // Calculate result and run the functional unit to calculate unit ready
-    result = funcUnit->run(start);    // start + execution time
+    result = funcUnit->run(start, registerUnlock);
 
     // Calculate fetch or store
     if (Instruction::INC == instr->getOpcode()
@@ -123,9 +133,9 @@ void CDC7600::runInstruction (Instruction *instr) {
             case Instruction::a5:
                 fetch = result + CDC7600_MEM_ACCESS_TIME;
                 fetchStr << fetch;
-                *(getRegisterP(
+                getRegisterP(
                         static_cast<Instruction::register_t>(instr->getOp1()
-                                - Instruction::a0))) = fetch;
+                                - Instruction::a0))->setReadReady(fetch);
                 break;
             case Instruction::a6:
             case Instruction::a7:
@@ -133,13 +143,10 @@ void CDC7600::runInstruction (Instruction *instr) {
                 storeStr << store;
                 break;
             default:
-                break; // Do nothing special for a0
+                break;  // Do nothing special for a0
         }
 
-    if (result <= getRegister(instr->getOp1()))
-        *(getRegisterP(instr->getOp1())) += 1;
-    else
-        *(getRegisterP(instr->getOp1())) = result;
+    getRegisterP(instr->getOp1())->setReadReady(result);
 
     // Prints the row of information for this instruction into the
     // time table
@@ -181,10 +188,11 @@ FunctionalUnit* CDC7600::getFunctionalUnit (const Instruction *instr) {
             requestedUnit = &(m_funcUnits[FunctionalUnit::FU_MULF]);  // FLOAT_MUL
             break;
         case Instruction::ADDF:
-            return &(m_funcUnits[FunctionalUnit::FU_ADDF]);
+            requestedUnit = &(m_funcUnits[FunctionalUnit::FU_ADDF]);
             break;
         case Instruction::BNQ:
-            return &(m_funcUnits[FunctionalUnit::FU_BOOL]);
+            requestedUnit = &(m_funcUnits[FunctionalUnit::FU_BOOL]);
+            break;
         default:
             throw FUNCTIONAL_UNIT_NONEXISTANT;
     }
@@ -215,8 +223,9 @@ std::list<Instruction::register_t> CDC7600::getDependencyRegisters (
     return retVal;
 }
 
-const Register CDC7600::getRegister (const Instruction::register_t reg) const {
-    Register result;
+const CDC7600::Register CDC7600::getRegister (
+        const Instruction::register_t reg) const {
+    CDC7600::Register result;
 
     switch (reg) {
         case Instruction::x0:
@@ -253,8 +262,8 @@ const Register CDC7600::getRegister (const Instruction::register_t reg) const {
     return result;
 }
 
-Register* CDC7600::getRegisterP (const Instruction::register_t reg) {
-    Register *result;
+CDC7600::Register* CDC7600::getRegisterP (const Instruction::register_t reg) {
+    CDC7600::Register *result;
 
     switch (reg) {
         case Instruction::x0:
@@ -298,8 +307,8 @@ unsigned int CDC7600::latestDependencyTime (
     std::list<Instruction::register_t>::const_iterator iterator;
     for (iterator = registers.begin(); iterator != registers.end();
             ++iterator) {
-        if (retVal < getRegister(*iterator))
-            retVal = getRegister(*iterator);
+        if (retVal < getRegister(*iterator).getReadReady())
+            retVal = getRegister(*iterator).getReadReady();
     }
 
     return retVal;

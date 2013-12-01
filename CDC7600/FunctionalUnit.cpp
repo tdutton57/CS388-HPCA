@@ -31,7 +31,7 @@ FunctionalUnit::FunctionalUnit (const FunctionalUnit::type type) {
             m_segTime = 1;
             break;
         default:
-            // Case for FIXED_ADD, FLOAT_ADD, INC, POP_COUNT, BOOL, and SHIFT types
+            // Case for FIXED_ADD, INC, POP_COUNT, BOOL, and SHIFT types
             m_execTime = 2;
             m_segTime = 1;
     }
@@ -44,7 +44,9 @@ void FunctionalUnit::reset () {
     m_ready = 0;
 }
 
-unsigned int FunctionalUnit::run (const unsigned int startTime) {
+unsigned int FunctionalUnit::run (const unsigned int startTime,
+        const unsigned int outputRegUnlocked) {
+    unsigned int resultReady;
     // Throw an error if the functional unit is busy
     if (m_ready > startTime)
         throw FUNCTIONAL_UNIT_NOT_READY;
@@ -55,6 +57,14 @@ unsigned int FunctionalUnit::run (const unsigned int startTime) {
 
     // Return the time for when the result has been produced
     // and is ready to be used
-    return startTime + m_execTime;
-}
+    resultReady = startTime + m_execTime;
 
+    // Delay the result if requested to
+    if (resultReady < outputRegUnlocked) {
+        resultReady = outputRegUnlocked;
+    }
+
+    // NOTE: Not checking for traffic jams
+
+    return resultReady;
+}
