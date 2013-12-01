@@ -132,7 +132,7 @@ Instruction* readFile (int argc, char *argv[]) {
     std::string filename;
     std::vector<std::string> lines;
 
-// Open either the file passed in as the argument, or a hard-coded test file
+    // Open either the file passed in as the argument, or a hard-coded test file
     if (0 == argc) {
         filename = "test.bin";
 
@@ -140,22 +140,22 @@ Instruction* readFile (int argc, char *argv[]) {
         filename = std::string(argv[0]);
     }
 
-// Open the file for reading...
+    // Open the file for reading...
     f.open(filename.c_str(), std::ios::in | std::ios::binary);
 
-// Throw an error if the given file path does not exist
+    // Throw an error if the given file path does not exist
     if (!(f.is_open())) {
         throw FILE_DOES_NOT_EXIST;
     }
 
-// Read in all lines of the program
+    // Read in all lines of the program
     std::string line;
     do {
         std::getline(f, line);
         lines.push_back(line);
     } while (!(f.eof()));
 
-// Loop through every line of the program and decode the mess
+    // Loop through every line of the program and decode the mess
     program = new Instruction[lines.size()];
     for (unsigned int i = 0; i < lines.size(); ++i) {
         // TODO: Write huge lookup tables that do this correctly

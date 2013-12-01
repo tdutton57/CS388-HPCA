@@ -13,13 +13,7 @@ CDC6000::CDC6000 (std::ostream *out, Instruction program[],
     reset();
 
     m_out = out;
-
-    // Initialize the functional units
-    FunctionalUnit::type unit = static_cast<FunctionalUnit::type>(0);
-    while (unit < FunctionalUnit::FUNCTIONAL_UNITS) {
-        m_funcUnits.push_back(FunctionalUnit(unit));
-        unit = static_cast<FunctionalUnit::type>(((int) unit) + 1);
-    }
+    m_newWordDelay = 0;
 
     // Initialize program memory
     m_instrMem.load(program, instrCount);
@@ -44,7 +38,7 @@ void CDC6000::run () {
 
         if (m_instrMem.isNewWord()) {
             if ((unsigned int) NULL_OPERAND != m_wordStart)
-                m_issue = std::max(m_issue, m_wordStart + 6); // Yea.. that's right, it's hardcoded. Deal with it
+                m_issue = std::max(m_issue, m_wordStart + m_newWordDelay);
             m_wordStart = m_issue;
         }
 
@@ -73,10 +67,6 @@ void CDC6000::reset () {
     m_clock = 0;
     m_issue = 0;
     m_wordStart = NULL_OPERAND;
-
-    // Reset functional units
-    for (unsigned int i = 0; i < m_funcUnits.size(); ++i)
-        m_funcUnits[i].reset();
 
     // Initialize all registers to 0
     CDC6000::Register **banks = new CDC6000::Register*[3];
@@ -304,6 +294,14 @@ unsigned int CDC6000::latestDependencyTime (
     return retVal;
 }
 
+void CDC7600::reset () {
+    CDC6000::reset();
+
+    // Reset functional units
+    for (unsigned int i = 0; i < m_funcUnits.size(); ++i)
+        m_funcUnits[i].reset();
+}
+
 FunctionalUnit* CDC7600::getFunctionalUnit (const Instruction *instr) {
     FunctionalUnit *requestedUnit;
 
@@ -325,4 +323,10 @@ FunctionalUnit* CDC7600::getFunctionalUnit (const Instruction *instr) {
     }
 
     return requestedUnit;
+}
+
+FunctionalUnit* CDC6600::getFunctionalUnit (const Instruction *instr) {
+    // TODO: DO me! :D
+
+    return NULL;
 }

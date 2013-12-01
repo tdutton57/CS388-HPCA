@@ -179,11 +179,11 @@ class CDC6000 {
 
         InstructionPipeline m_instrMem;
         unsigned int m_pc;
+        unsigned int m_newWordDelay;
 
         unsigned int m_clock;
         unsigned int m_issue;
         unsigned int m_wordStart;
-        std::vector<FunctionalUnit> m_funcUnits;
 
         CDC6000::Register m_Rx[CDC7600_REGISTER_BANK_SIZE];
         CDC6000::Register m_Ra[CDC7600_REGISTER_BANK_SIZE];
@@ -195,6 +195,35 @@ class CDC7600: public CDC6000 {
         CDC7600 (std::ostream *out, Instruction program[],
                 const unsigned int instrCount) :
                 CDC6000(out, program, instrCount) {
+            m_newWordDelay = 6;
+
+            // Initialize the functional units
+            FunctionalUnit::type unit = static_cast<FunctionalUnit::type>(0);
+            while (unit < FunctionalUnit::FUNCTIONAL_UNITS) {
+                m_funcUnits.push_back(FunctionalUnit(unit));
+                unit = static_cast<FunctionalUnit::type>(((int) unit) + 1);
+            }
+        }
+
+        void reset ();
+
+        /**
+         * @brief   Returns the functional unit used for this instruction
+         */
+        FunctionalUnit* getFunctionalUnit (const Instruction *instr);
+
+    protected:
+        std::vector<FunctionalUnit> m_funcUnits;
+};
+
+class CDC6600: public CDC6000 {
+    public:
+        CDC6600 (std::ostream *out, Instruction program[],
+                const unsigned int instrCount) :
+                CDC6000(out, program, instrCount) {
+            m_newWordDelay = 8;
+
+            // TODO: Initialize functional units
         }
 
         /**
@@ -202,5 +231,7 @@ class CDC7600: public CDC6000 {
          */
         FunctionalUnit* getFunctionalUnit (const Instruction *instr);
 
+    protected:
+        std::vector<std::vector<FunctionalUnit> > m_funcUnits;
 };
 #endif /* CDC7600_H_ */
