@@ -168,6 +168,8 @@ void CDC7600::printInstrInfo (const Instruction *instr,
         const FunctionalUnit *funcUnit, const unsigned int start,
         const unsigned int result, const std::string fetchStr,
         const std::string storeStr) {
+    char octopusesssss[10];
+
     // Output some cool information about this instruction!
     *m_out << instr->getWordNum() << CDC7600_OUTPUT_DELIM;
     *m_out << instr->getInstrStr() << CDC7600_OUTPUT_DELIM;
@@ -177,7 +179,8 @@ void CDC7600::printInstrInfo (const Instruction *instr,
     else
         /* Implied: if (Instruction::SHORT == instr->getType()) */
         *m_out << "S" << CDC7600_OUTPUT_DELIM;
-    *m_out << instr->getOpcode() << CDC7600_OUTPUT_DELIM;
+    sprintf(octopusesssss, "%o", instr->getOpcode());
+    *m_out << octopusesssss << CDC7600_OUTPUT_DELIM;
     *m_out << m_issue << CDC7600_OUTPUT_DELIM;
     *m_out << start << CDC7600_OUTPUT_DELIM;
     *m_out << result << CDC7600_OUTPUT_DELIM;

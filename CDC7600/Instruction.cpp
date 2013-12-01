@@ -128,5 +128,5 @@ std::ostream& operator<< (std::ostream& s, const Instruction::FlexableOp op) {
     if (op.getType())
         return s << *static_cast<const Instruction::register_t *>(op.get());
     else
-        return s << *static_cast<const int *>(op.get());
+        return s << 'k';
 }

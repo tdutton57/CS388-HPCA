@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <cstdio>
 #include "Instruction.h"
 #include "FunctionalUnit.h"
 #include "InstructionPipeline.h"
