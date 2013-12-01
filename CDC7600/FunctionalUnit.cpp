@@ -10,24 +10,24 @@
 
 #include "FunctionalUnit.h"
 
-FunctionalUnit::FunctionalUnit (const FunctionalUnit::type type) {
+FunctionalUnit::FunctionalUnit (const FunctionalUnit::typeCDC7600 type) {
 
     // Set the execution time and segment time of the functional unit
     //TODO: fix for CDC6600
     switch (type) {
-        case FU_MULF:
+        case FU_76_MULF:
             m_execTime = 5;
             m_segTime = 2;
             break;
-        case FU_DIVF:
+        case FU_76_DIVF:
             m_execTime = 20;
             m_segTime = 18;
             break;
-        case FU_NORM:
+        case FU_76_NORM:
             m_execTime = 3;
             m_segTime = 3;
             break;
-        case FU_ADDF:
+        case FU_76_ADDF:
             m_execTime = 4;
             m_segTime = 1;
             break;
@@ -36,45 +36,28 @@ FunctionalUnit::FunctionalUnit (const FunctionalUnit::type type) {
             m_execTime = 2;
             m_segTime = 1;
     }
+    reset();
+}
 
+FunctionalUnit::FunctionalUnit (const FunctionalUnit::typeCDC6600 type) {
     //CDC 6600
     switch(type) {
-        //floating point multiplier (2x)
-        case FU_MULF:
-            m_execTime = 5;
-            m_segTime = 5;
+        case FU_66_MULF:
+            m_execTime = 10;
             break;
-
-        //floating point divide
-        case FU_DIVF:
-            m_execTime = 34;
-            m_segTime = 34;
+        case FU_66_JMP:
+            m_execTime = 8; // Only true for Bi compared with Bj
             break;
-
-        //floating point add
-        case FU_ADDF:
+        case FU_66_ADDF:
             m_execTime = 4;
-            m_segTime = 4;
             break;
-
-        //"long" integer add
-        case FU_LNGADD:
-            m_execTime = 2;
-            m_segTime = 2;
+        case FU_66_DIVF:
+            m_execTime = 29;
             break;
-
-        //incrementers (2 copies; performed memory load/store)
-        case FU_INC:
+        default:
             m_execTime = 3;
-            m_segTime = 3;
-            break;
-
-        //shift boolean and branch integer Add
-        case default:
-            m_execTime = 3;
-            m_segTime = 3;
-
     }
+    m_segTime = m_execTime;
     reset();
 }
 

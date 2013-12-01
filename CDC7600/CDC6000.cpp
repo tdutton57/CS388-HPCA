@@ -133,7 +133,9 @@ void CDC6000::runInstruction (Instruction *instr) {
             case Instruction::a5:
                 fetch = result + CDC7600_MEM_ACCESS_TIME;
                 fetchStr << fetch;
-                getRegisterP( static_cast<Instruction::register_t>(instr->getOp1()- Instruction::a0))->setReadReady(fetch);
+                getRegisterP(
+                        static_cast<Instruction::register_t>(instr->getOp1()
+                                - Instruction::a0))->setReadReady(fetch);
                 break;
             case Instruction::a6:
             case Instruction::a7:
@@ -305,16 +307,16 @@ FunctionalUnit* CDC7600::getFunctionalUnit (const Instruction *instr) {
 
     switch (instr->getOpcode()) {
         case Instruction::INC:
-            requestedUnit = &(m_funcUnits[FunctionalUnit::FU_INC]);  // INC
+            requestedUnit = &(m_funcUnits[FunctionalUnit::FU_76_INC]);  // INC
             break;
         case Instruction::MULF:
-            requestedUnit = &(m_funcUnits[FunctionalUnit::FU_MULF]);  // FLOAT_MUL
+            requestedUnit = &(m_funcUnits[FunctionalUnit::FU_76_MULF]);  // FLOAT_MUL
             break;
         case Instruction::ADDF:
-            requestedUnit = &(m_funcUnits[FunctionalUnit::FU_ADDF]);
+            requestedUnit = &(m_funcUnits[FunctionalUnit::FU_76_ADDF]);
             break;
         case Instruction::BNQ:
-            requestedUnit = &(m_funcUnits[FunctionalUnit::FU_BOOL]);
+            requestedUnit = &(m_funcUnits[FunctionalUnit::FU_76_BOOL]);
             break;
         default:
             throw FUNCTIONAL_UNIT_NONEXISTANT;
@@ -327,78 +329,65 @@ FunctionalUnit* CDC6600::getFunctionalUnit (const Instruction *instr) {
     // TODO: DO me! :D
     //TL;DR 
     FunctionalUnit *requestedUnit;
-    switch(instr->getOpcode()) {
-        
-        //floating point multiply (2 copies)
-        case Instruction::INC
-            //if the first incriment is busy,
-            //use the other incrimenter      
-        break;
-    
-    //floating point divide
-    case Instruction::DIVF:
-        requestedUnit = &(m_functionalUnits[FunctionalUnit::FU_DIVF]);    
-        break;
-    //floating point add
-    case Instruction ADDF:
-        requestedUnit = &(m_functionalUnits[FunctionalUnit::FU_ADDF]);
-        break;
-
-    //"long" integer add
-    case Integer::ADDI
-        requestUnit = &(m_functionalUnits[FunctionalUnit::FU_ADDI]);
-        break;
-
-    //incrementers (2 copies; performed memory load/store)
-    case
-        break;
-
-    //shift
-    case Instruction::SHIFT:
-        break;
-
-    //boolean logic
-    case Instruction::BOOL:
-        break;
-
-    //branch
-    case 
-        break;
-
-    default:
-        throw FUNCTIONAL_UNIT_NONEXISTANT;
+    switch (instr->getOpcode()) {
+        case Instruction::ADDF:
+        case Instruction::SUBF:
+            requestedUnit = getReadyFunction(&(m_funcUnits[FunctionalUnit::FU_66_ADDF]));
+            break;
+        case Instruction::MULF:
+            requestedUnit = getReadyFunction(&(m_funcUnits[FunctionalUnit::FU_66_MULF]));
+            break;
+        case Instruction::INC:
+            requestedUnit = getReadyFunction(&(m_funcUnits[FunctionalUnit::FU_66_INC]));
+            break;
+        case Instruction::BNQ:
+            requestedUnit = getReadyFunction(&(m_funcUnits[FunctionalUnit::FU_66_JMP]));
+            break;
+        default:
+            throw NOT_IMPLEMENTED_YET;
     }
 
     return requestedUnit;
 }
 
-unsigned int CDC6600::getNumFunctionalUnit(const FunctionalUnit::type unit) {
-    switch(unit) {
-        case FunctionalUnit::ADDL:
+unsigned int CDC6600::getNumFunctionalUnit (
+        const FunctionalUnit::typeCDC6600 unit) {
+    switch (unit) {
+        case FunctionalUnit::FU_66_ADDL:
             return CDC6600_NUM_ADDL;
-        case FunctionalUnit::ADDF:
+        case FunctionalUnit::FU_66_ADDF:
             return CDC6600_NUM_ADDF;
-        case FunctionalUnit::MULF:
+        case FunctionalUnit::FU_66_MULF:
             return CDC6600_NUM_MULF;
-        case FunctionalUnit::DIVF:
+        case FunctionalUnit::FU_66_DIVF:
             return CDC6600_NUM_DIVF;
-        case FunctionalUnit::INC:
+        case FunctionalUnit::FU_66_INC:
             return CDC6600_NUM_INC;
-        case FunctionalUnit::BOOL
+        case FunctionalUnit::FU_66_BOOL:
             return CDC6600_NUM_BOOL;
-        case FunctionalUnit::BRANCH:
-            return CDC6600_NUM_BRANCH;
-        case FunctionalUnit::SHIFT
+        case FunctionalUnit::FU_66_JMP:
+            return CDC6600_NUM_JMP;
+        case FunctionalUnit::FU_66_SHIFT:
             return CDC6600_NUM_SHIFT;
         default:
             throw CDC6600_NO_FUNCTIONAL_UNIT;
+    }
 }
 
-           
-               
-              
-          
-            
-             
-             
-CDC6600_NUM_DIVF              
+FunctionalUnit* CDC6600::getReadyFunction (
+        std::vector<FunctionalUnit> * functUnits) {
+      //find one with smallest ready time
+    //keep track of the smallest ready time and the index with the smallest ready time
+    std::pair<unsigned int, unsigned int>bestReady;
+    bestReady.first = 0;
+    bestReady.second = (*functUnits)[0].getUnitReady();
+    if( 1 < functUnits->size()) {
+        for(unsigned int i = 0; i<functUnits->size();++i) {
+            if( bestReady.second > (*functUnits)[i].getUnitReady()) {
+                bestReady.second = (*functUnits)[i].getUnitReady();
+                bestReady.first = i;
+            }
+        }
+    }
+    return &((*functUnits)[bestReady.first]);
+}

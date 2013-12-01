@@ -29,7 +29,7 @@
 #define CDC6600_NUM_MULF              2
 #define CDC6600_NUM_INC               2
 #define CDC6600_NUM_BOOL              1
-#define CDC6600_NUM_BRANCH            1
+#define CDC6600_NUM_JMP               1
 #define CDC6600_NUM_SHIFT             1
 #define CDC6600_NUM_ADDF              1
 #define CDC6600_NUM_ADDL              1
@@ -207,10 +207,13 @@ class CDC7600: public CDC6000 {
             m_newWordDelay = 6;
 
             // Initialize the functional units
-            FunctionalUnit::type unit = static_cast<FunctionalUnit::type>(0);
-            while (unit < FunctionalUnit::FUNCTIONAL_UNITS) {
+            FunctionalUnit::typeCDC7600 unit =
+                    static_cast<FunctionalUnit::typeCDC7600>(0);
+            while (unit < FunctionalUnit::FUNCTIONAL_UNITS_7600) {
                 m_funcUnits.push_back(FunctionalUnit(unit));
-                unit = static_cast<FunctionalUnit::type>(((int) unit) + 1);
+                unit =
+                        static_cast<FunctionalUnit::typeCDC7600>(((int) unit)
+                                + 1);
             }
         }
 
@@ -225,32 +228,35 @@ class CDC7600: public CDC6000 {
         std::vector<FunctionalUnit> m_funcUnits;
 };
 
-
 class CDC6600: public CDC6000 {
+    protected:
+        static unsigned int getNumFunctionalUnit (
+                const FunctionalUnit::typeCDC6600 unit);
     public:
         CDC6600 (std::ostream *out, Instruction program[],
                 const unsigned int instrCount) :
                 CDC6000(out, program, instrCount) {
 
-                m_newWordDelay = 8;
-                FunctionalUnit::type unit = static_cast<FunctionalUnit::type>(0);
-                while(unit < FunctionalUnit::FUNCTIONAL_UNITS) {
-                    vector<FunctionalUnit> temp;
-                    for(int i=0;i<getNumFunctionalUnits(unit);++i){
-                        temp.push_back(FunctionalUnit(unit));
-                    }
-                    m_funcUnits.push_back(temp); //2-d Vector of functional units. 
+            m_newWordDelay = 8;
+            FunctionalUnit::typeCDC6600 unit =
+                    static_cast<FunctionalUnit::typeCDC6600>(0);
+            while (unit < FunctionalUnit::FUNCTIONAL_UNITS_6600) {
+                std::vector<FunctionalUnit> temp;
+                for (unsigned int i = 0; i < getNumFunctionalUnit(unit); ++i) {
+                    temp.push_back(FunctionalUnit(unit));
                 }
-
+                m_funcUnits.push_back(temp);  //2-d Vector of functional units.
             }
+
+        }
 
         /**
          * @brief   Returns the functional unit used for this instruction
          */
         FunctionalUnit* getFunctionalUnit (const Instruction *instr);
     protected:
-        static unsigned int getNumFunctionalUnit(const FunctionalUnit::type unit);
-
+        FunctionalUnit * getReadyFunction (
+                std::vector<FunctionalUnit> * functUnits);
     protected:
         std::vector<std::vector<FunctionalUnit> > m_funcUnits;
 };
