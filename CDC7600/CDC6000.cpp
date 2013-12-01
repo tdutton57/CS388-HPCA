@@ -1,14 +1,14 @@
 /**
- * @file    CDC7600.cpp
+ * @file    CDC6000.cpp
  * @project CS388-HPCA
  *
  * @author  David Zemon, Katie Isbell
  * @email   david@stlswedespeed.com
  */
 
-#include "CDC7600.h"
+#include "CDC6000.h"
 
-CDC7600::CDC7600 (std::ostream *out, Instruction program[],
+CDC6000::CDC6000 (std::ostream *out, Instruction program[],
         const unsigned int instrCount) {
     reset();
 
@@ -25,12 +25,12 @@ CDC7600::CDC7600 (std::ostream *out, Instruction program[],
     m_instrMem.load(program, instrCount);
 }
 
-CDC7600::~CDC7600 () {
+CDC6000::~CDC6000 () {
     reset();
     m_out = NULL;
 }
 
-void CDC7600::run () {
+void CDC6000::run () {
     Instruction *instr;
 
     if (m_firstRun) {
@@ -54,7 +54,7 @@ void CDC7600::run () {
     }
 }
 
-void CDC7600::run (const unsigned int n) {
+void CDC6000::run (const unsigned int n) {
     if (m_firstRun) {
         initOutput();
         m_firstRun = !m_firstRun;
@@ -67,7 +67,7 @@ void CDC7600::run (const unsigned int n) {
     }
 }
 
-void CDC7600::reset () {
+void CDC6000::reset () {
     m_firstRun = true;
     m_pc = 0;
     m_clock = 0;
@@ -79,7 +79,7 @@ void CDC7600::reset () {
         m_funcUnits[i].reset();
 
     // Initialize all registers to 0
-    CDC7600::Register **banks = new CDC7600::Register*[3];
+    CDC6000::Register **banks = new CDC6000::Register*[3];
     banks[0] = m_Rx;
     banks[1] = m_Ra;
     banks[2] = m_Rb;
@@ -91,7 +91,7 @@ void CDC7600::reset () {
     m_instrMem.reset();
 }
 
-void CDC7600::initOutput () {
+void CDC6000::initOutput () {
     *m_out << "Word #" << CDC7600_OUTPUT_DELIM;
     *m_out << "Instruction" << CDC7600_OUTPUT_DELIM;
     *m_out << "Symantics" << CDC7600_OUTPUT_DELIM;
@@ -105,7 +105,7 @@ void CDC7600::initOutput () {
     *m_out << "Store" << CDC7600_OUTPUT_DELIM << std::endl;
 }
 
-void CDC7600::runInstruction (Instruction *instr) {
+void CDC6000::runInstruction (Instruction *instr) {
     unsigned int start = 0, result = 0, fetch = 0, store = 0;
     std::stringstream fetchStr, storeStr;
 
@@ -164,7 +164,7 @@ void CDC7600::runInstruction (Instruction *instr) {
             storeStr.str());
 }
 
-void CDC7600::printInstrInfo (const Instruction *instr,
+void CDC6000::printInstrInfo (const Instruction *instr,
         const FunctionalUnit *funcUnit, const unsigned int start,
         const unsigned int result, const std::string fetchStr,
         const std::string storeStr) {
@@ -190,30 +190,7 @@ void CDC7600::printInstrInfo (const Instruction *instr,
     *m_out << std::endl;
 }
 
-FunctionalUnit* CDC7600::getFunctionalUnit (const Instruction *instr) {
-    FunctionalUnit *requestedUnit;
-
-    switch (instr->getOpcode()) {
-        case Instruction::INC:
-            requestedUnit = &(m_funcUnits[FunctionalUnit::FU_INC]);  // INC
-            break;
-        case Instruction::MULF:
-            requestedUnit = &(m_funcUnits[FunctionalUnit::FU_MULF]);  // FLOAT_MUL
-            break;
-        case Instruction::ADDF:
-            requestedUnit = &(m_funcUnits[FunctionalUnit::FU_ADDF]);
-            break;
-        case Instruction::BNQ:
-            requestedUnit = &(m_funcUnits[FunctionalUnit::FU_BOOL]);
-            break;
-        default:
-            throw FUNCTIONAL_UNIT_NONEXISTANT;
-    }
-
-    return requestedUnit;
-}
-
-std::list<Instruction::register_t> CDC7600::getDependencyRegisters (
+std::list<Instruction::register_t> CDC6000::getDependencyRegisters (
         const Instruction *instr) const {
     std::list<Instruction::register_t> retVal;
 
@@ -236,9 +213,9 @@ std::list<Instruction::register_t> CDC7600::getDependencyRegisters (
     return retVal;
 }
 
-const CDC7600::Register CDC7600::getRegister (
+const CDC6000::Register CDC6000::getRegister (
         const Instruction::register_t reg) const {
-    CDC7600::Register result;
+    CDC6000::Register result;
 
     switch (reg) {
         case Instruction::x0:
@@ -275,8 +252,8 @@ const CDC7600::Register CDC7600::getRegister (
     return result;
 }
 
-CDC7600::Register* CDC7600::getRegisterP (const Instruction::register_t reg) {
-    CDC7600::Register *result;
+CDC6000::Register* CDC6000::getRegisterP (const Instruction::register_t reg) {
+    CDC6000::Register *result;
 
     switch (reg) {
         case Instruction::x0:
@@ -313,7 +290,7 @@ CDC7600::Register* CDC7600::getRegisterP (const Instruction::register_t reg) {
     return result;
 }
 
-unsigned int CDC7600::latestDependencyTime (
+unsigned int CDC6000::latestDependencyTime (
         const std::list<Instruction::register_t> &registers) {
     unsigned int retVal = m_clock;
 
@@ -325,4 +302,27 @@ unsigned int CDC7600::latestDependencyTime (
     }
 
     return retVal;
+}
+
+FunctionalUnit* CDC7600::getFunctionalUnit (const Instruction *instr) {
+    FunctionalUnit *requestedUnit;
+
+    switch (instr->getOpcode()) {
+        case Instruction::INC:
+            requestedUnit = &(m_funcUnits[FunctionalUnit::FU_INC]);  // INC
+            break;
+        case Instruction::MULF:
+            requestedUnit = &(m_funcUnits[FunctionalUnit::FU_MULF]);  // FLOAT_MUL
+            break;
+        case Instruction::ADDF:
+            requestedUnit = &(m_funcUnits[FunctionalUnit::FU_ADDF]);
+            break;
+        case Instruction::BNQ:
+            requestedUnit = &(m_funcUnits[FunctionalUnit::FU_BOOL]);
+            break;
+        default:
+            throw FUNCTIONAL_UNIT_NONEXISTANT;
+    }
+
+    return requestedUnit;
 }

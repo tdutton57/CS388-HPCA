@@ -1,5 +1,5 @@
 /**
- * @file    CDC7600.h
+ * @file    CDC6000.h
  * @project CS388-HPCA
  *
  * @author  David Zemon, Katie Isbell
@@ -29,11 +29,13 @@
 /**
  * @brief: This class represents an instance of the CDC7600
  */
-class CDC7600 {
+class CDC6000 {
     protected:
         class Register {
             public:
-                Register () : m_readReady(0), m_lock(0) {}
+                Register () :
+                        m_readReady(0), m_lock(0) {
+                }
 
                 void reset () {
                     m_readReady = m_lock = 0;
@@ -69,14 +71,14 @@ class CDC7600 {
          * @param   out
          * @param   program The list of instructions to be executed
          * @param   instrCount
-        */
-        CDC7600 (std::ostream *out, Instruction program[],
+         */
+        CDC6000 (std::ostream *out, Instruction program[],
                 const unsigned int instrCount);
 
         /**
          * @brief   Destructor to delete an instance of the CDC7600
-        */
-        ~CDC7600 ();
+         */
+        virtual ~CDC6000 ();
 
         /**
          * @brief   Runs the set of instructions once
@@ -150,24 +152,26 @@ class CDC7600 {
 
         /**
          * @brief   Returns the functional unit used for this instruction
-        */
-        FunctionalUnit* getFunctionalUnit (const Instruction *instr);
+         */
+        virtual FunctionalUnit* getFunctionalUnit (
+                const Instruction *instr) = 0;
 
         /**
-        * @brief   Returns the list of registers that could delay the
-        *          time to start executing the instruction
-        * @param   *instr A pointer to the instruction for which we want
-        *          to return its dependency registers
-        */
-        std::list<Instruction::register_t> getDependencyRegisters
-              (const Instruction *instr) const;
+         * @brief   Returns the list of registers that could delay the
+         *          time to start executing the instruction
+         * @param   *instr A pointer to the instruction for which we want
+         *          to return its dependency registers
+         */
+        std::list<Instruction::register_t> getDependencyRegisters (
+                const Instruction *instr) const;
 
-        const CDC7600::Register getRegister (const Instruction::register_t reg) const;
+        const CDC6000::Register getRegister (
+                const Instruction::register_t reg) const;
 
-        CDC7600::Register* getRegisterP (const Instruction::register_t reg);
+        CDC6000::Register* getRegisterP (const Instruction::register_t reg);
 
-        unsigned int latestDependencyTime
-              (const std::list<Instruction::register_t> &registers);
+        unsigned int latestDependencyTime (
+                const std::list<Instruction::register_t> &registers);
 
     protected:
         std::ostream *m_out;
@@ -181,9 +185,22 @@ class CDC7600 {
         unsigned int m_wordStart;
         std::vector<FunctionalUnit> m_funcUnits;
 
-        CDC7600::Register m_Rx[CDC7600_REGISTER_BANK_SIZE];
-        CDC7600::Register m_Ra[CDC7600_REGISTER_BANK_SIZE];
-        CDC7600::Register m_Rb[CDC7600_REGISTER_BANK_SIZE];
+        CDC6000::Register m_Rx[CDC7600_REGISTER_BANK_SIZE];
+        CDC6000::Register m_Ra[CDC7600_REGISTER_BANK_SIZE];
+        CDC6000::Register m_Rb[CDC7600_REGISTER_BANK_SIZE];
 };
 
+class CDC7600: public CDC6000 {
+    public:
+        CDC7600 (std::ostream *out, Instruction program[],
+                const unsigned int instrCount) :
+                CDC6000(out, program, instrCount) {
+        }
+
+        /**
+         * @brief   Returns the functional unit used for this instruction
+         */
+        FunctionalUnit* getFunctionalUnit (const Instruction *instr);
+
+};
 #endif /* CDC7600_H_ */

@@ -9,7 +9,7 @@
 #include "cdc7600_main.h"
 
 int main (int argc, char *argv[]) {
-    CDC7600 *superPuter;
+    CDC6000 *superPuter;
     std::ofstream *outFile;
 #ifndef RUN_FULL
     std::string userInput;

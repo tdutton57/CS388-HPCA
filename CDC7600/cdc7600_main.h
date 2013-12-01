@@ -14,10 +14,10 @@
 #include <stdint.h>
 #include <vector>
 #include "Instruction.h"
-#include "CDC7600.h"
+#include "CDC6000.h"
 #include "CDC7600_Exceptions.h"
 
-#define RUN_FULL
+//#define RUN_FULL
 
 /**
  * Program 1 instructions
