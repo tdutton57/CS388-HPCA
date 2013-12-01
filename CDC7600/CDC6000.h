@@ -26,6 +26,15 @@
 #define CDC7600_MEM_ACCESS_TIME       4
 #define CDC7600_OUTPUT_DELIM          ','
 
+#define CDC6600_NUM_MULF              2
+#define CDC6600_NUM_INC               2
+#define CDC6600_NUM_BOOL              1
+#define CDC6600_NUM_BRANCH            1
+#define CDC6600_NUM_SHIFT             1
+#define CDC6600_NUM_ADDF              1
+#define CDC6600_NUM_ADDL              1
+#define CDC6600_NUM_DIVF              1
+
 /**
  * @brief: This class represents an instance of the CDC7600
  */
@@ -216,25 +225,31 @@ class CDC7600: public CDC6000 {
         std::vector<FunctionalUnit> m_funcUnits;
 };
 
+
 class CDC6600: public CDC6000 {
     public:
         CDC6600 (std::ostream *out, Instruction program[],
                 const unsigned int instrCount) :
                 CDC6000(out, program, instrCount) {
-            m_newWordDelay = 8;
 
-            FunctionalUnit::type unit = static_cast<FunctionalUnit::type>(0);
-            while(unit < FunctionalUnit::FUNCTIONAL_UNITS) {
-                m_funcUnits.push_back(FunctionalUnit(unit));
-                unit = static_cast<FunctionalUnit::type>(((int) unit) +1);
+                m_newWordDelay = 8;
+                FunctionalUnit::type unit = static_cast<FunctionalUnit::type>(0);
+                while(unit < FunctionalUnit::FUNCTIONAL_UNITS) {
+                    vector<FunctionalUnit> temp;
+                    for(int i=0;i<getNumFunctionalUnits(unit);++i){
+                        temp.push_back(FunctionalUnit(unit));
+                    }
+                    m_funcUnits.push_back(temp); //2-d Vector of functional units. 
+                }
+
             }
-        }
-        
 
         /**
          * @brief   Returns the functional unit used for this instruction
          */
         FunctionalUnit* getFunctionalUnit (const Instruction *instr);
+    protected:
+        static unsigned int getNumFunctionalUnit(const FunctionalUnit::type unit);
 
     protected:
         std::vector<std::vector<FunctionalUnit> > m_funcUnits;
