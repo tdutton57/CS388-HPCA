@@ -55,16 +55,19 @@ void InstructionPipeline::InstructionStack::push_back (
 
 InstructionPipeline::InstructionPipeline () {
     m_prevPC = NULL_OPERAND;
+    m_wordStartClock = 0;
+    m_newWord = true;
 }
 
 InstructionPipeline::~InstructionPipeline () {
-    clear();
+    reset();
 }
 
-void InstructionPipeline::clear () {
+void InstructionPipeline::reset () {
     m_instrMem.clear();
     m_prevPC = NULL_OPERAND;
     m_stack.clear();
+    m_wordStartClock = 0;
 }
 
 void InstructionPipeline::load (Instruction &instr) {
@@ -114,6 +117,9 @@ uint8_t InstructionPipeline::readInstr (const unsigned int pc,
     // Grab requested instruction
     nextInstr = &(m_instrMem[pc]);
 
+    // If the last instruction read came from a new word, turn off the signal
+    m_newWord = false;
+
     // If this isn't the first instruction of the program, do cool things
     if ((unsigned int) NULL_OPERAND != m_prevPC) {
         Instruction *prevInstr = &(m_instrMem[m_prevPC]);  // Previous instruction
@@ -121,31 +127,35 @@ uint8_t InstructionPipeline::readInstr (const unsigned int pc,
         // If the next instruction resides in a different word than the
         // current, a memory access is required
         if (prevInstr->getWordNum() != nextInstr->getWordNum()) {
+            m_newWord = true;
+
+            // If it's in the stack, it's quick
             if (m_stack.contains(pc)) {
                 m_stack.retrieve(pc);
                 nextInstr = &(m_instrMem[pc]);
                 alreadyInsterted = true;
                 delay += INSTRUCTION_STACK_DELAY_TIME;
-            } else
-                delay += MEM_ACCESS_ADD_TIME;
-        }
-
-        // On occasion, a branch will cause a special delay where the PC is
-        // modified in a way other than simple increment
-        if (prevInstr->getWordNum() > nextInstr->getWordNum())
-            switch (nextInstr->getOpcode()) {
-                // TODO: Should probably figure out the extra delays due to branching
-                default:
-                    break;
             }
-        else {
+            // On occasion, a branch will cause a special delay where the PC is
+            // modified in a way other than simple increment
+            else if (prevInstr->getWordNum() > nextInstr->getWordNum())
+                switch (nextInstr->getOpcode()) {
+                    // TODO: Should probably figure out the extra delays due to branching
+                    default:
+                        break;
+                }
+            // Otherwise, it's slow
+            else {
+                delay += MEM_ACCESS_ADD_TIME;
+            }
+        } else {
             // If previous instruction was a long instruction, add an extra
             // clock cycle to the delay
             if (Instruction::LONG == prevInstr->getType())
                 delay += PC_INC_ADD_TIME;
-
         }
-    } /* implied: when m_prevPC == NULL_OPERAND, it is the first instruction */
+    } else
+        m_newWord = true;
 
     m_prevPC = pc;
     if (!alreadyInsterted)

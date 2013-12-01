@@ -42,7 +42,7 @@ class InstructionPipeline {
     public:
         InstructionPipeline ();
         ~InstructionPipeline ();
-        void clear ();
+        void reset ();
 
         void load (Instruction &instr);
 
@@ -60,6 +60,10 @@ class InstructionPipeline {
          */
         uint8_t readInstr (const unsigned int pc, Instruction* &nextInstr);
 
+        bool isNewWord () {
+            return m_newWord;
+        }
+
         unsigned int size () const;
 
         std::string getInstrStr () const;
@@ -70,7 +74,9 @@ class InstructionPipeline {
     protected:
         std::vector<Instruction> m_instrMem;
         unsigned int m_prevPC;
+        unsigned int m_wordStartClock;
         InstructionStack m_stack;
+        bool m_newWord;
 };
 
 #endif /* INSTRUCTIONPIPELINE_H_ */

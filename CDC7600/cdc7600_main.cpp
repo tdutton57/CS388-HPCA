@@ -10,9 +10,10 @@
 
 int main (int argc, char *argv[]) {
     CDC7600 *superPuter;
+    std::ofstream *outFile;
+#ifndef RUN_FULL
     std::string userInput;
     unsigned int selection;
-    std::ofstream *outFile;
     std::ostream *output;
 
     // Read in the program instructions
@@ -22,13 +23,13 @@ int main (int argc, char *argv[]) {
 
     // Print a greeting
     std::cout
-            << "This program will simulate the CDC7600 and produce the time table for a"
-            << std::endl << "given set of instructions." << std::endl
-            << std::endl;
+    << "This program will simulate the CDC7600 and produce the time table for a"
+    << std::endl << "given set of instructions." << std::endl
+    << std::endl;
 
     // Prompt the user to select which program to run
     std::cout << "Select the input to this program from the list below."
-            << std::endl;
+    << std::endl;
 
     std::cout << "\t1. Y = A*X^2 + B" << std::endl;
     std::cout << "\t2. Y = A*X^2 + B*X + c" << std::endl;
@@ -49,39 +50,78 @@ int main (int argc, char *argv[]) {
         }
         output = outFile;
     } else
-        output = &(std::cout);
+    output = &(std::cout);
 
     // Run the selected program
     try {
         switch (selection) {
             case 1:
-                superPuter = new CDC7600(output, program1,
-                        sizeof(program1) / sizeof(*program1));
-                superPuter->run();
-                break;
+            superPuter = new CDC7600(output, program1,
+                    sizeof(program1) / sizeof(*program1));
+            superPuter->run();
+            break;
             case 2:
-                superPuter = new CDC7600(output, program2,
-                        sizeof(program2) / sizeof(*program2));
-                superPuter->run();
-                break;
+            superPuter = new CDC7600(output, program2,
+                    sizeof(program2) / sizeof(*program2));
+            superPuter->run();
+            break;
             case 3:
-                std::cout << "How long are the vectors X and Y?" << std::endl
-                        << ">>> ";
-                std::getline(std::cin, userInput);
+            std::cout << "How long are the vectors X and Y?" << std::endl
+            << ">>> ";
+            std::getline(std::cin, userInput);
 
-                superPuter = new CDC7600(output, program3,
-                        sizeof(program3) / sizeof(*program3));
-                superPuter->run(std::atoi(userInput.c_str()));
-                break;
+            superPuter = new CDC7600(output, program3,
+                    sizeof(program3) / sizeof(*program3));
+            superPuter->run(std::atoi(userInput.c_str()));
+            break;
             default:
-                throw INVALID_INPUT;
+            throw INVALID_INPUT;
         }
     } catch (cdc7600_exception &e) {
         std::fprintf(stderr, CDC7600_EXCEPTION_STRINGS[e].c_str());
     }
 
     if (outFile->is_open())
-        outFile->close();
+    outFile->close();
+    delete outFile;
+    delete superPuter;
+#else
+    // Program 1
+    outFile = new std::ofstream("CDC7600_program1.csv");
+    superPuter = new CDC7600(outFile, program1,
+            sizeof(program1) / sizeof(*program1));
+    superPuter->run();
+    delete superPuter;
+    outFile->close();
+    delete outFile;
+
+    // Program 2
+    outFile = new std::ofstream("CDC7600_program2.csv");
+    superPuter = new CDC7600(outFile, program2,
+            sizeof(program2) / sizeof(*program2));
+    superPuter->run();
+    delete superPuter;
+    outFile->close();
+    delete outFile;
+
+    // Program 3.1
+    outFile = new std::ofstream("CDC7600_program3_len3.csv");
+    superPuter = new CDC7600(outFile, program3,
+            sizeof(program3) / sizeof(*program3));
+    superPuter->run(3);
+    delete superPuter;
+    outFile->close();
+    delete outFile;
+
+    // Program 3.2
+    outFile = new std::ofstream("CDC7600_program3_len5.csv");
+    superPuter = new CDC7600(outFile, program3,
+            sizeof(program3) / sizeof(*program3));
+    superPuter->run(5);
+    delete superPuter;
+    outFile->close();
+    delete outFile;
+#endif
 
     return 0;
 }

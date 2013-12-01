@@ -10,6 +10,8 @@
 
 CDC7600::CDC7600 (std::ostream *out, Instruction program[],
         const unsigned int instrCount) {
+    reset();
+
     m_out = out;
 
     // Initialize the functional units
@@ -21,11 +23,10 @@ CDC7600::CDC7600 (std::ostream *out, Instruction program[],
 
     // Initialize program memory
     m_instrMem.load(program, instrCount);
-
-    reset();
 }
 
 CDC7600::~CDC7600 () {
+    reset();
     m_out = NULL;
 }
 
@@ -40,6 +41,12 @@ void CDC7600::run () {
     while (m_pc < m_instrMem.size()) {
         m_issue += m_instrMem.readInstr(m_pc, instr);
         m_issue = std::max(m_issue, getFunctionalUnit(instr)->getUnitReady());
+
+        if (m_instrMem.isNewWord()) {
+            if ((unsigned int) NULL_OPERAND != m_wordStart)
+                m_issue = std::max(m_issue, m_wordStart + 6); // Yea.. that's right, it's hardcoded. Deal with it
+            m_wordStart = m_issue;
+        }
 
         // Run one instruction
         runInstruction(instr);
@@ -65,6 +72,7 @@ void CDC7600::reset () {
     m_pc = 0;
     m_clock = 0;
     m_issue = 0;
+    m_wordStart = NULL_OPERAND;
 
     // Reset functional units
     for (unsigned int i = 0; i < m_funcUnits.size(); ++i)
@@ -79,6 +87,8 @@ void CDC7600::reset () {
         for (uint8_t reg = 0; reg < CDC7600_REGISTER_BANK_SIZE; ++reg)
             banks[bank][reg].reset();
     delete[] banks;
+
+    m_instrMem.reset();
 }
 
 void CDC7600::initOutput () {

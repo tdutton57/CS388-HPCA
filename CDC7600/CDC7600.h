@@ -177,6 +177,7 @@ class CDC7600 {
 
         unsigned int m_clock;
         unsigned int m_issue;
+        unsigned int m_wordStart;
         std::vector<FunctionalUnit> m_funcUnits;
 
         CDC7600::Register m_Rx[CDC7600_REGISTER_BANK_SIZE];
