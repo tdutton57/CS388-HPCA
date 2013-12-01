@@ -8,9 +8,10 @@
 
 #include "cdc7600_main.h"
 
-int main (int argc, char *argv[]) {
+int main () {
     CDC7600 *superPuter;
     std::ofstream *outFile;
+    Instruction* customProgram;
 #ifndef RUN_FULL
     std::string userInput;
     unsigned int selection;
@@ -23,23 +24,25 @@ int main (int argc, char *argv[]) {
 
     // Print a greeting
     std::cout
-    << "This program will simulate the CDC7600 and produce the time table for a"
-    << std::endl << "given set of instructions." << std::endl
-    << std::endl;
+            << "This program will simulate the CDC7600 and produce the time table for a"
+            << std::endl << "given set of instructions." << std::endl
+            << std::endl;
 
     // Prompt the user to select which program to run
     std::cout << "Select the input to this program from the list below."
-    << std::endl;
+            << std::endl;
 
     std::cout << "\t1. Y = A*X^2 + B" << std::endl;
     std::cout << "\t2. Y = A*X^2 + B*X + c" << std::endl;
     std::cout << "\t3. Y = A*X^2 + B*X + c (X and Y are vectors)" << std::endl;
+    std::cout << "\t4. Custom program (requires file input)" << std::endl;
 
     std::cout << ">>> ";
     std::getline(std::cin, userInput);
     selection = std::atoi(userInput.c_str());
 
-    std::cout << "Specify a path to write the output to [DEFAULT: stdout]" << std::endl;
+    std::cout << "Specify a path to write the output to [DEFAULT: stdout]"
+            << std::endl;
     std::cout << ">>> ";
     std::getline(std::cin, userInput);
 
@@ -50,39 +53,50 @@ int main (int argc, char *argv[]) {
         }
         output = outFile;
     } else
-    output = &(std::cout);
+        output = &(std::cout);
 
     // Run the selected program
     try {
         switch (selection) {
             case 1:
-            superPuter = new CDC7600(output, program1,
-                    sizeof(program1) / sizeof(*program1));
-            superPuter->run();
-            break;
+                superPuter = new CDC7600(output, program1,
+                        sizeof(program1) / sizeof(*program1));
+                superPuter->run();
+                break;
             case 2:
-            superPuter = new CDC7600(output, program2,
-                    sizeof(program2) / sizeof(*program2));
-            superPuter->run();
-            break;
+                superPuter = new CDC7600(output, program2,
+                        sizeof(program2) / sizeof(*program2));
+                superPuter->run();
+                break;
             case 3:
-            std::cout << "How long are the vectors X and Y?" << std::endl
-            << ">>> ";
-            std::getline(std::cin, userInput);
+                std::cout << "How long are the vectors X and Y?" << std::endl
+                        << ">>> ";
+                std::getline(std::cin, userInput);
 
-            superPuter = new CDC7600(output, program3,
-                    sizeof(program3) / sizeof(*program3));
-            superPuter->run(std::atoi(userInput.c_str()));
-            break;
+                superPuter = new CDC7600(output, program3,
+                        sizeof(program3) / sizeof(*program3));
+                superPuter->run(std::atoi(userInput.c_str()));
+                break;
+            case 4:
+                unsigned int instructions;
+
+                std::cout << "Specify the path for your program" << std::endl
+                        << ">>> ";
+                std::getline(std::cin, userInput);
+                instructions = readFile(userInput, customProgram);
+
+                superPuter = new CDC7600(output, customProgram, instructions);
+                superPuter->run();
+                break;
             default:
-            throw INVALID_INPUT;
+                throw INVALID_INPUT;
         }
     } catch (cdc7600_exception &e) {
         std::fprintf(stderr, CDC7600_EXCEPTION_STRINGS[e].c_str());
     }
 
     if (outFile->is_open())
-    outFile->close();
+        outFile->close();
     delete outFile;
     delete superPuter;
 #else
@@ -126,22 +140,12 @@ int main (int argc, char *argv[]) {
     return 0;
 }
 
-Instruction* readFile (int argc, char *argv[]) {
-    Instruction *program;
+unsigned int readFile (const std::string filename, Instruction* &program) {
     std::ifstream f;
-    std::string filename;
     std::vector<std::string> lines;
 
-// Open either the file passed in as the argument, or a hard-coded test file
-    if (0 == argc) {
-        filename = "test.bin";
-
-    } else {
-        filename = std::string(argv[0]);
-    }
-
-// Open the file for reading...
-    f.open(filename.c_str(), std::ios::in | std::ios::binary);
+    // Open the file for reading...
+    f.open(filename.c_str(), std::ios::in);
 
 // Throw an error if the given file path does not exist
     if (!(f.is_open())) {
@@ -155,12 +159,30 @@ Instruction* readFile (int argc, char *argv[]) {
         lines.push_back(line);
     } while (!(f.eof()));
 
-// Loop through every line of the program and decode the mess
+    // Check for empty last line
+    if (lines[lines.size() - 1].empty())
+        lines.pop_back();
+
+    // Loop through every line of the program and decode the mess
     program = new Instruction[lines.size()];
     for (unsigned int i = 0; i < lines.size(); ++i) {
-        // TODO: Write huge lookup tables that do this correctly
-//        program[i] = Instruction();
+        std::stringstream parser(lines[i]);
+        program[i] = parseLine(parser);
     }
 
-    return program;
+    return lines.size();
+}
+
+Instruction parseLine (std::stringstream &ss) {
+    std::string instrParts[5];
+    for (uint8_t i = 0; i < 5; ++i)
+        std::getline(ss, instrParts[i], ',');
+
+    std::string descr = instrParts[0];
+    Instruction::opcode_t opcode = Instruction::parseOpcode(instrParts[1]);
+    Instruction::register_t op1 = Instruction::parseReg(instrParts[2]);
+    Instruction::FlexableOp op2 = Instruction::parseFlexOps(instrParts[3]);
+    Instruction::FlexableOp op3 = Instruction::parseFlexOps(instrParts[4]);
+
+    return Instruction(descr, opcode, op1, op2, op3);
 }

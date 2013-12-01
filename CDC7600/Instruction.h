@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <sstream>
 #include <string>
+#include <cstdlib>
 #include "CDC7600_Exceptions.h"
 
 #define NULL_OPERAND    -1
@@ -92,6 +93,11 @@ class Instruction {
                 Instruction::register_t m_reg;
                 int m_imm;
         };
+
+    public:
+        static opcode_t parseOpcode (const std::string opcode);
+        static register_t parseReg (const std::string op1);
+        static FlexableOp parseFlexOps (const std::string flexOp);
 
     public:
         Instruction () :

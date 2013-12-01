@@ -13,11 +13,12 @@
 #include <fstream>
 #include <stdint.h>
 #include <vector>
+#include <sstream>
 #include "Instruction.h"
 #include "CDC7600.h"
 #include "CDC7600_Exceptions.h"
 
-#define RUN_FULL
+//#define RUN_FULL
 
 /**
  * Program 1 instructions
@@ -85,6 +86,8 @@ Instruction program3[] = {
     Instruction("Store Y[i]", Instruction::INC, Instruction::a7, Instruction::a7, 1),
     Instruction("Loop", Instruction::BNQ, Instruction::b0, Instruction::b7, 10) };
 
-Instruction* readFile (int argc, char *argv[]);
+unsigned int readFile (const std::string filename, Instruction* &program);
+
+Instruction parseLine (std::stringstream &ss);
 
 #endif /* CDC7600_MAIN_H_ */

@@ -1,0 +1,7 @@
+Fetch x,INC,a1,a1,#42
+Fetch A,INC,a2,a2,#43
+Form x^2,MULF,x0,x1,x1
+Form Ax^2,MULF,x6,x0,x2
+Fetch B,INC,a3,a3,#44
+Form Y,ADDF,x7,x6,x3
+Store Y,INC,a7,a7,#45

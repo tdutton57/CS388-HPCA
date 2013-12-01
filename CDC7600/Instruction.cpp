@@ -8,6 +8,52 @@
 
 #include "Instruction.h"
 
+Instruction::opcode_t Instruction::parseOpcode (const std::string opcode) {
+    if ("ADDF" == opcode)
+        return Instruction::ADDF;
+    else if ("SUBF" == opcode)
+        return Instruction::SUBF;
+    else if ("MULF" == opcode)
+        return Instruction::MULF;
+    else if ("INC" == opcode)
+        return Instruction::INC;
+    else if ("BNQ" == opcode)
+        return Instruction::BNQ;
+    else
+        throw INSTRUCTION_PARSER_ERROR;
+}
+
+Instruction::register_t Instruction::parseReg (const std::string op1) {
+    char bank = op1[0];
+    unsigned int reg = op1[1] - '0';
+    register_t startingReg;
+
+    switch (bank) {
+        case 'a':
+            startingReg = Instruction::a0;
+            break;
+        case 'b':
+            startingReg = Instruction::b0;
+            break;
+        case 'x':
+            startingReg = Instruction::x0;
+            break;
+        default:
+            throw INSTRUCTION_PARSER_ERROR;
+    }
+
+    return static_cast<Instruction::register_t>(startingReg + reg);
+}
+Instruction::FlexableOp Instruction::parseFlexOps (
+        const std::string flexOp) {
+    if ('#' == flexOp[0]) {
+        std::string temp = flexOp.substr(1);
+        return FlexableOp(std::atoi(temp.c_str()));
+    }
+    else
+        return parseReg(flexOp);
+}
+
 Instruction::Instruction (const std::string description,
         const Instruction::opcode_t opcode, const Instruction::register_t op1,
         const FlexableOp &op2, const FlexableOp &op3) {
