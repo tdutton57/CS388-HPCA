@@ -94,7 +94,7 @@ void CDC7600::reset () {
 void CDC7600::initOutput () {
     *m_out << "Word #" << CDC7600_OUTPUT_DELIM;
     *m_out << "Instruction" << CDC7600_OUTPUT_DELIM;
-    *m_out << "Symantics" << CDC7600_OUTPUT_DELIM;
+    *m_out << "Semantics" << CDC7600_OUTPUT_DELIM;
     *m_out << "Len." << CDC7600_OUTPUT_DELIM;
     *m_out << "Opcode" << CDC7600_OUTPUT_DELIM;
     *m_out << "Issue" << CDC7600_OUTPUT_DELIM;
