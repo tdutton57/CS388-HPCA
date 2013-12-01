@@ -41,8 +41,10 @@ int main () {
     std::getline(std::cin, userInput);
     selection = std::atoi(userInput.c_str());
 
-    std::cout << "Specify the path to which the output will be written. [DEFAULT: stdout]"
-            << std::endl;
+    std::cout << "Specify the path to which the output will be written.  "<<
+        std::endl  <<
+        "If no path is specified, the output will be written to stdout by " <<
+        "default." << std::endl;
     std::cout << ">>> ";
     std::getline(std::cin, userInput);
 
