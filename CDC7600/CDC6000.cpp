@@ -133,9 +133,7 @@ void CDC6000::runInstruction (Instruction *instr) {
             case Instruction::a5:
                 fetch = result + CDC7600_MEM_ACCESS_TIME;
                 fetchStr << fetch;
-                getRegisterP(
-                        static_cast<Instruction::register_t>(instr->getOp1()
-                                - Instruction::a0))->setReadReady(fetch);
+                getRegisterP( static_cast<Instruction::register_t>(instr->getOp1()- Instruction::a0))->setReadReady(fetch);
                 break;
             case Instruction::a6:
             case Instruction::a7:
@@ -327,6 +325,59 @@ FunctionalUnit* CDC7600::getFunctionalUnit (const Instruction *instr) {
 
 FunctionalUnit* CDC6600::getFunctionalUnit (const Instruction *instr) {
     // TODO: DO me! :D
+    //TL;DR 
+    //it's the same 
 
-    return NULL;
+    //Load store ops (no F.U) incriment also does load stores, there is some magical hardware and it's constantly
+    // montoring a 1-7 when it sees one change, it reads the new mod value and goes and grab that value from meory and stores it.
+    //registers A1-A5 are used for loading into the reg file and A6 & A7 are used for storing in new memory
+    //if you modify the value in registers A1-A5 will load and will grab the value grabs value in A1 uses it as the address grabs value at address and stores in X1
+    //anytime you modify A1-A5 you are also modifying X1-X5 indirectly.  
+    //modify the functional unit class 
+    //modify the constructor for the 6600
+    //construct in constructor
+    FunctionalUnit *requestedUnit;
+    switch(instr->getOpcode()) {
+        
+        //floating point multiply (2 copies)
+        case Instruction::INC
+            //if the first incriment is busy,
+            //use the other incrimenter
+                
+        break;
+    //floating point divide
+    case Instruction::DIVF:
+        requestedUnit = &(m_functionalUnits[FunctionalUnit::FU_DIVF]);    
+        break;
+
+    //floating point add
+    case Instruction ADDF:
+        requestedUnit = &(m_functionalUnits[FunctionalUnit::FU_ADDF]);
+        break;
+
+    //"long" integer add
+    case Integer::
+        break;
+
+    //incrementers (2 copies; performed memory load/store)
+    case
+        break;
+
+    //shift
+    case
+        break;
+
+    //boolean logic
+    case
+        break;
+
+    //branch
+    case
+        break;
+
+    default:
+        throw FUNCTIONAL_UNIT_NONEXISTANT;
+    }
+
+    return requestedUnit;
 }

@@ -223,8 +223,13 @@ class CDC6600: public CDC6000 {
                 CDC6000(out, program, instrCount) {
             m_newWordDelay = 8;
 
-            // TODO: Initialize functional units
+            FunctionalUnit::type unit = static_cast<FunctionalUnit::type>(0);
+            while(unit < FunctionalUnit::FUNCTIONAL_UNITS) {
+                m_funcUnits.push_back(FunctionalUnit(unit));
+                unit = static_cast<FunctionalUnit::type>(((int) unit) +1);
+            }
         }
+        
 
         /**
          * @brief   Returns the functional unit used for this instruction

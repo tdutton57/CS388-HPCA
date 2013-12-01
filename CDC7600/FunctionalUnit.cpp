@@ -13,6 +13,7 @@
 FunctionalUnit::FunctionalUnit (const FunctionalUnit::type type) {
 
     // Set the execution time and segment time of the functional unit
+    //TODO: fix for CDC6600
     switch (type) {
         case FU_MULF:
             m_execTime = 5;
@@ -36,6 +37,44 @@ FunctionalUnit::FunctionalUnit (const FunctionalUnit::type type) {
             m_segTime = 1;
     }
 
+    //CDC 6600
+    switch(type) {
+        //floating point multiplier (2x)
+        case FU_MULF:
+            m_execTime = 5;
+            m_segTime = 2;
+            break;
+
+        //floating point divide
+        case FU_DIVF:
+            m_execTime = 34;
+            m_segTime = 1;
+            break;
+
+        //floating point add
+        case FU_ADDF:
+            m_execTime = 4;
+            m_segTime = 3;
+            break;
+
+        //"long" integer add
+        case FU_LNGADD:
+            m_execTime = 2;
+            m_segTime = 1;
+            break;
+
+        //incrementers (2 copies; performed memory load/store)
+        case FU_INC:
+            m_execTime = 3;
+            m_segTime = 1;
+            break;
+
+        //shift boolean and branch
+        case default:
+            m_execTime = 3;
+            m_segTime = 1;
+
+    }
     reset();
 }
 
