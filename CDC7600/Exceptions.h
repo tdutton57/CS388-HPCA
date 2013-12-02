@@ -1,15 +1,15 @@
 /**
- * @file    CDC7600_Exceptions.h
+ * @file    Exceptions.h
  * @project CDC7600
  *
- * @author  David Zemon
+ * @author  David Zemon, Tiffani Dutton
  * @email   david@stlswedespeed.com
  *
  * @description
  */
 
-#ifndef CDC7600_EXCEPTIONS_H_
-#define CDC7600_EXCEPTIONS_H_
+#ifndef EXCEPTIONS_H_
+#define EXCEPTIONS_H_
 
 #include <string>
 
@@ -22,9 +22,11 @@ typedef enum _cdc7600_exception {
     INSTRUCTION_STACK_OOR, /** Instruction stack out-of-range */
     FUNCTIONAL_UNIT_NONEXISTANT,
     CDC6600_NO_FUNCTIONAL_UNIT,
+    PROGRAM_MEM_NOT_LOADED,
+    NONEXISTANT_PROC,
     TOTAL_CDC7600_EXCEPTIONS
 } cdc7600_exception;
 
-extern const std::string CDC7600_EXCEPTION_STRINGS[TOTAL_CDC7600_EXCEPTIONS];
+extern const std::string EXCEPTION_STRINGS[TOTAL_CDC7600_EXCEPTIONS];
 
-#endif /* CDC7600_EXCEPTIONS_H_ */
+#endif /*EXCEPTIONS_H_ */

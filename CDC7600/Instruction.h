@@ -2,7 +2,7 @@
  * @file    Instruction.h
  * @project CS388-HPCA
  *
- * @author  David Zemon, Katie Isbell
+ * @author  David Zemon, Katie Isbell, Tiffani Dutton
  * @email   david@stlswedespeed.com
  */
 
@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <sstream>
 #include <string>
-#include "CDC7600_Exceptions.h"
+#include "Exceptions.h"
 
 #define NULL_OPERAND    -1
 

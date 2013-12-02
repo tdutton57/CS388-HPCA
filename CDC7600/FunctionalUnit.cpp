@@ -57,7 +57,7 @@ FunctionalUnit::FunctionalUnit (const FunctionalUnit::typeCDC6600 type) {
         default:
             m_execTime = 3;
     }
-    m_segTime = m_execTime;
+    m_segTime = m_execTime + 1;
     reset();
 }
 

@@ -6,8 +6,8 @@
  * @email   david@stlswedespeed.com
  */
 
-#ifndef CDC7600_H_
-#define CDC7600_H_
+#ifndef CDC6000_H_
+#define CDC6000_H_
 
 #include <iostream>
 #include <algorithm>
@@ -19,7 +19,7 @@
 #include "Instruction.h"
 #include "FunctionalUnit.h"
 #include "InstructionPipeline.h"
-#include "CDC7600_Exceptions.h"
+#include "Exceptions.h"
 
 #define CDC7600_REGISTER_BANK_SIZE    8
 #define CDC7600_WORDS_PER_LONGWORD    2
@@ -72,22 +72,21 @@ class CDC6000 {
         };
 
     public:
-
         /**
          * @brief   Constructor which initializes the functional units
          *          and program memory
          *
          * @param   out
-         * @param   program The list of instructions to be executed
-         * @param   instrCount
          */
-        CDC6000 (std::ostream *out, Instruction program[],
-                const unsigned int instrCount);
+        CDC6000 ();
 
         /**
          * @brief   Destructor to delete an instance of the CDC7600
          */
         virtual ~CDC6000 ();
+
+        virtual void init (std::ostream *out, Instruction program[],
+                const unsigned int instrCount);
 
         /**
          * @brief   Runs the set of instructions once
@@ -110,7 +109,7 @@ class CDC6000 {
          *          counter, the clock cycles, issue time, the functional units,
          *          and all registers
          */
-        void reset ();
+        virtual void reset ();
 
     protected:
         /**
@@ -201,21 +200,12 @@ class CDC6000 {
 
 class CDC7600: public CDC6000 {
     public:
-        CDC7600 (std::ostream *out, Instruction program[],
-                const unsigned int instrCount) :
-                CDC6000(out, program, instrCount) {
-            m_newWordDelay = 6;
-
-            // Initialize the functional units
-            FunctionalUnit::typeCDC7600 unit =
-                    static_cast<FunctionalUnit::typeCDC7600>(0);
-            while (unit < FunctionalUnit::FUNCTIONAL_UNITS_7600) {
-                m_funcUnits.push_back(FunctionalUnit(unit));
-                unit =
-                        static_cast<FunctionalUnit::typeCDC7600>(((int) unit)
-                                + 1);
-            }
+        CDC7600 () :
+                CDC6000() {
         }
+
+        void init (std::ostream *out, Instruction program[],
+                const unsigned int instrCount);
 
         void reset ();
 
@@ -233,31 +223,23 @@ class CDC6600: public CDC6000 {
         static unsigned int getNumFunctionalUnit (
                 const FunctionalUnit::typeCDC6600 unit);
     public:
-        CDC6600 (std::ostream *out, Instruction program[],
-                const unsigned int instrCount) :
-                CDC6000(out, program, instrCount) {
-
-            m_newWordDelay = 8;
-            FunctionalUnit::typeCDC6600 unit =
-                    static_cast<FunctionalUnit::typeCDC6600>(0);
-            while (unit < FunctionalUnit::FUNCTIONAL_UNITS_6600) {
-                std::vector<FunctionalUnit> temp;
-                for (unsigned int i = 0; i < getNumFunctionalUnit(unit); ++i) {
-                    temp.push_back(FunctionalUnit(unit));
-                }
-                m_funcUnits.push_back(temp);  //2-d Vector of functional units.
-            }
-
+        CDC6600 () :
+                CDC6000() {
         }
+
+        void init (std::ostream *out, Instruction program[],
+                const unsigned int instrCount);
+
+        void reset ();
 
         /**
          * @brief   Returns the functional unit used for this instruction
          */
         FunctionalUnit* getFunctionalUnit (const Instruction *instr);
     protected:
-        FunctionalUnit * getReadyFunction (
-                std::vector<FunctionalUnit> * functUnits);
+        FunctionalUnit* getReadyFunction (
+                std::vector<FunctionalUnit> *functUnits);
     protected:
         std::vector<std::vector<FunctionalUnit> > m_funcUnits;
 };
-#endif /* CDC7600_H_ */
+#endif /* CDC6000_H_ */

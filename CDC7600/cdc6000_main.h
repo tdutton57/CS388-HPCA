@@ -6,8 +6,8 @@
  * @email   david@stlswedespeed.com
  */
 
-#ifndef CDC7600_MAIN_H_
-#define CDC7600_MAIN_H_
+#ifndef CDC6000_MAIN_H_
+#define CDC6000_MAIN_H_
 
 #include <iostream>
 #include <fstream>
@@ -15,9 +15,9 @@
 #include <vector>
 #include "Instruction.h"
 #include "CDC6000.h"
-#include "CDC7600_Exceptions.h"
+#include "Exceptions.h"
 
-//#define RUN_FULL
+#define RUN_FULL
 
 /**
  * Program 1 instructions
@@ -87,4 +87,4 @@ Instruction program3[] = {
 
 Instruction* readFile (int argc, char *argv[]);
 
-#endif /* CDC7600_MAIN_H_ */
+#endif /* CDC6000_MAIN_H_ */

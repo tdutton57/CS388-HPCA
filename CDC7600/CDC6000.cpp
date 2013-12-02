@@ -8,15 +8,11 @@
 
 #include "CDC6000.h"
 
-CDC6000::CDC6000 (std::ostream *out, Instruction program[],
-        const unsigned int instrCount) {
+CDC6000::CDC6000 () {
     reset();
 
-    m_out = out;
+    m_out = NULL;
     m_newWordDelay = 0;
-
-    // Initialize program memory
-    m_instrMem.load(program, instrCount);
 }
 
 CDC6000::~CDC6000 () {
@@ -24,8 +20,20 @@ CDC6000::~CDC6000 () {
     m_out = NULL;
 }
 
+void CDC6000::init (std::ostream *out, Instruction program[],
+        const unsigned int instrCount) {
+    m_out = out;
+
+    // Initialize program memory
+    m_instrMem.load(program, instrCount);
+}
+
 void CDC6000::run () {
     Instruction *instr;
+
+    // Make sure instructions have been loaded into program memory
+    if (!(m_instrMem.size()))
+        throw PROGRAM_MEM_NOT_LOADED;
 
     if (m_firstRun) {
         initOutput();
@@ -294,6 +302,24 @@ unsigned int CDC6000::latestDependencyTime (
     return retVal;
 }
 
+void CDC7600::init (std::ostream *out, Instruction program[],
+        const unsigned int instrCount) {
+    CDC6000::init(out, program, instrCount);
+
+    // Set the instruction pipeline processor type
+    m_instrMem.setProcessor(InstructionPipeline::CDC7600);
+
+    m_newWordDelay = 6;
+
+    // Initialize the functional units
+    FunctionalUnit::typeCDC7600 unit =
+            static_cast<FunctionalUnit::typeCDC7600>(0);
+    while (unit < FunctionalUnit::FUNCTIONAL_UNITS_7600) {
+        m_funcUnits.push_back(FunctionalUnit(unit));
+        unit = static_cast<FunctionalUnit::typeCDC7600>(((int) unit) + 1);
+    }
+}
+
 void CDC7600::reset () {
     CDC6000::reset();
 
@@ -325,23 +351,56 @@ FunctionalUnit* CDC7600::getFunctionalUnit (const Instruction *instr) {
     return requestedUnit;
 }
 
+void CDC6600::init (std::ostream *out, Instruction program[],
+        const unsigned int instrCount) {
+    CDC6000::init(out, program, instrCount);
+
+    m_instrMem.setProcessor(InstructionPipeline::CDC6600);
+
+    m_newWordDelay = 8;
+
+    FunctionalUnit::typeCDC6600 unit =
+            static_cast<FunctionalUnit::typeCDC6600>(0);
+    while (unit < FunctionalUnit::FUNCTIONAL_UNITS_6600) {
+        std::vector<FunctionalUnit> temp;
+        for (unsigned int i = 0; i < getNumFunctionalUnit(unit); ++i) {
+            temp.push_back(FunctionalUnit(unit));
+        }
+        m_funcUnits.push_back(temp);  //2-d Vector of functional units.
+        unit = static_cast<FunctionalUnit::typeCDC6600>(((int) unit) + 1);
+    }
+}
+
+void CDC6600::reset () {
+    CDC6000::reset();
+
+    // Reset functional units
+    for (unsigned int i = 0; i < m_funcUnits.size(); ++i)
+        for (unsigned int j = 0; j < m_funcUnits[i].size(); ++j)
+            m_funcUnits[i][j].reset();
+}
+
 FunctionalUnit* CDC6600::getFunctionalUnit (const Instruction *instr) {
     // TODO: DO me! :D
-    //TL;DR 
+    //TL;DR
     FunctionalUnit *requestedUnit;
     switch (instr->getOpcode()) {
         case Instruction::ADDF:
         case Instruction::SUBF:
-            requestedUnit = getReadyFunction(&(m_funcUnits[FunctionalUnit::FU_66_ADDF]));
+            requestedUnit = getReadyFunction(
+                    &(m_funcUnits[FunctionalUnit::FU_66_ADDF]));
             break;
         case Instruction::MULF:
-            requestedUnit = getReadyFunction(&(m_funcUnits[FunctionalUnit::FU_66_MULF]));
+            requestedUnit = getReadyFunction(
+                    &(m_funcUnits[FunctionalUnit::FU_66_MULF]));
             break;
         case Instruction::INC:
-            requestedUnit = getReadyFunction(&(m_funcUnits[FunctionalUnit::FU_66_INC]));
+            requestedUnit = getReadyFunction(
+                    &(m_funcUnits[FunctionalUnit::FU_66_INC]));
             break;
         case Instruction::BNQ:
-            requestedUnit = getReadyFunction(&(m_funcUnits[FunctionalUnit::FU_66_JMP]));
+            requestedUnit = getReadyFunction(
+                    &(m_funcUnits[FunctionalUnit::FU_66_JMP]));
             break;
         default:
             throw NOT_IMPLEMENTED_YET;
@@ -375,15 +434,15 @@ unsigned int CDC6600::getNumFunctionalUnit (
 }
 
 FunctionalUnit* CDC6600::getReadyFunction (
-        std::vector<FunctionalUnit> * functUnits) {
-      //find one with smallest ready time
+        std::vector<FunctionalUnit> *functUnits) {
+    //find one with smallest ready time
     //keep track of the smallest ready time and the index with the smallest ready time
-    std::pair<unsigned int, unsigned int>bestReady;
+    std::pair<unsigned int, unsigned int> bestReady;
     bestReady.first = 0;
     bestReady.second = (*functUnits)[0].getUnitReady();
-    if( 1 < functUnits->size()) {
-        for(unsigned int i = 0; i<functUnits->size();++i) {
-            if( bestReady.second > (*functUnits)[i].getUnitReady()) {
+    if (1 < functUnits->size()) {
+        for (unsigned int i = 0; i < functUnits->size(); ++i) {
+            if (bestReady.second > (*functUnits)[i].getUnitReady()) {
                 bestReady.second = (*functUnits)[i].getUnitReady();
                 bestReady.first = i;
             }
