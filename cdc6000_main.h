@@ -6,8 +6,8 @@
  * @email   david@stlswedespeed.com
  */
 
-#ifndef CDC7600_MAIN_H_
-#define CDC7600_MAIN_H_
+#ifndef CDC6000_MAIN_H_
+#define CDC6000_MAIN_H_
 
 #include <iostream>
 #include <fstream>
@@ -15,8 +15,8 @@
 #include <vector>
 #include <sstream>
 #include "Instruction.h"
-#include "CDC7600.h"
-#include "CDC7600_Exceptions.h"
+#include "CDC6000.h"
+#include "Exceptions.h"
 
 //#define RUN_FULL
 
@@ -90,4 +90,4 @@ unsigned int readFile (const std::string filename, Instruction* &program);
 
 Instruction parseLine (std::stringstream &ss);
 
-#endif /* CDC7600_MAIN_H_ */
+#endif /* CDC6000_MAIN_H_ */

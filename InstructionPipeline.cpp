@@ -10,12 +10,6 @@
 
 #include "InstructionPipeline.h"
 
-#define DEFAULT_DELAY                   1
-#define PC_INC_ADD_TIME                 1
-#define MEM_ACCESS_ADD_TIME             2
-#define INSTRUCTION_STACK_DELAY_TIME    0
-#define INSTRUCTION_STACK_SIZE          10
-
 void InstructionPipeline::InstructionStack::clear () {
     m_stack.clear();
 }
@@ -49,7 +43,7 @@ void InstructionPipeline::InstructionStack::push_back (
         const std::vector<std::pair<unsigned int, Instruction> > &word) {
     m_stack.push_back(word);
 
-    if (INSTRUCTION_STACK_SIZE < m_stack.size())
+    if (m_maxSize < m_stack.size())
         m_stack.pop_front();
 }
 
@@ -57,6 +51,13 @@ InstructionPipeline::InstructionPipeline () {
     m_prevPC = NULL_OPERAND;
     m_wordStartClock = 0;
     m_newWord = true;
+
+    // Must set these later
+    m_defaultDelay = -1;
+    m_pcIncAddTime = -1;
+    m_memAccessAddTime = -1;
+    m_instrStackDelayTime = -1;
+    m_stack.setMaxSize(-1);
 }
 
 InstructionPipeline::~InstructionPipeline () {
@@ -68,6 +69,27 @@ void InstructionPipeline::reset () {
     m_prevPC = NULL_OPERAND;
     m_stack.clear();
     m_wordStartClock = 0;
+}
+
+void InstructionPipeline::setProcessor (const cdc_proc_t proc) {
+    switch (proc) {
+        case InstructionPipeline::CDC6600:
+            m_defaultDelay = 1;
+            m_pcIncAddTime = 1;
+            m_memAccessAddTime = 2;
+            m_instrStackDelayTime = 0;
+            m_stack.setMaxSize(10);
+            break;
+        case InstructionPipeline::CDC7600:
+            m_defaultDelay = 1;
+            m_pcIncAddTime = 1;
+            m_memAccessAddTime = 2;
+            m_instrStackDelayTime = 0;
+            m_stack.setMaxSize(10);
+            break;
+        default:
+            throw NONEXISTANT_PROC;
+    }
 }
 
 void InstructionPipeline::load (Instruction &instr) {
@@ -111,7 +133,7 @@ void InstructionPipeline::load (Instruction program[],
 
 uint8_t InstructionPipeline::readInstr (const unsigned int pc,
         Instruction* &nextInstr) {
-    uint8_t delay = DEFAULT_DELAY;
+    uint8_t delay = m_defaultDelay;
     bool alreadyInsterted = false;
 
     // Grab requested instruction
@@ -134,7 +156,7 @@ uint8_t InstructionPipeline::readInstr (const unsigned int pc,
                 m_stack.retrieve(pc);
                 nextInstr = &(m_instrMem[pc]);
                 alreadyInsterted = true;
-                delay += INSTRUCTION_STACK_DELAY_TIME;
+                delay += m_instrStackDelayTime;
             }
             // On occasion, a branch will cause a special delay where the PC is
             // modified in a way other than simple increment
@@ -146,13 +168,13 @@ uint8_t InstructionPipeline::readInstr (const unsigned int pc,
                 }
             // Otherwise, it's slow
             else {
-                delay += MEM_ACCESS_ADD_TIME;
+                delay += m_memAccessAddTime;
             }
         } else {
             // If previous instruction was a long instruction, add an extra
             // clock cycle to the delay
             if (Instruction::LONG == prevInstr->getType())
-                delay += PC_INC_ADD_TIME;
+                delay += m_pcIncAddTime;
         }
     } else
         m_newWord = true;
