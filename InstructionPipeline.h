@@ -63,7 +63,7 @@ class InstructionPipeline {
 
         void setProcessor (const cdc_proc_t proc);
 
-        void load (Instruction &instr);
+        void load (Instruction &instr, unsigned int &currentWord, unsigned int &bitOffset);
 
         void load (Instruction program[], const unsigned int instrCount);
 

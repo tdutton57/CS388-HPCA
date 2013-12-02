@@ -92,10 +92,8 @@ void InstructionPipeline::setProcessor (const cdc_proc_t proc) {
     }
 }
 
-void InstructionPipeline::load (Instruction &instr) {
-    static unsigned int currentWord = 0;
-    static unsigned int bitOffset = 0;
-
+void InstructionPipeline::load (Instruction &instr, unsigned int &currentWord,
+        unsigned int &bitOffset) {
     // Determine which word of instruction memory this instruction will be
     // loaded into
     if (Instruction::SHORT == instr.getType()) {
@@ -127,8 +125,11 @@ void InstructionPipeline::load (Instruction &instr) {
 
 void InstructionPipeline::load (Instruction program[],
         const unsigned int instrCount) {
+    unsigned int word = 0;
+    unsigned int bitOffset = 0;
+
     for (unsigned int i = 0; i < instrCount; ++i)
-        load(program[i]);
+        load(program[i], word, bitOffset);
 }
 
 uint8_t InstructionPipeline::readInstr (const unsigned int pc,
