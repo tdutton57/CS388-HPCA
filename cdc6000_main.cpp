@@ -131,6 +131,16 @@ int main (int argc, char *argv[]) {
         delete outFile;
 
         // Program 3.1
+        outFile = new std::ofstream("CDC7600_program3_len1.csv");
+        superPuter = new CDC7600();
+        superPuter->init(outFile, program3,
+                sizeof(program3) / sizeof(*program3));
+        superPuter->run(1);
+        delete superPuter;
+        outFile->close();
+        delete outFile;
+
+        // Program 3.2
         outFile = new std::ofstream("CDC7600_program3_len3.csv");
         superPuter = new CDC7600();
         superPuter->init(outFile, program3,
@@ -140,7 +150,7 @@ int main (int argc, char *argv[]) {
         outFile->close();
         delete outFile;
 
-        // Program 3.2
+        // Program 3.3
         outFile = new std::ofstream("CDC7600_program3_len5.csv");
         superPuter = new CDC7600();
         superPuter->init(outFile, program3,
@@ -174,6 +184,16 @@ int main (int argc, char *argv[]) {
         delete outFile;
 
         // Program 3.1
+        outFile = new std::ofstream("CDC6600_program3_len1.csv");
+        superPuter = new CDC6600();
+        superPuter->init(outFile, program3,
+                sizeof(program3) / sizeof(*program3));
+        superPuter->run(1);
+        delete superPuter;
+        outFile->close();
+        delete outFile;
+
+        // Program 3.2
         outFile = new std::ofstream("CDC6600_program3_len3.csv");
         superPuter = new CDC6600();
         superPuter->init(outFile, program3,
@@ -183,7 +203,7 @@ int main (int argc, char *argv[]) {
         outFile->close();
         delete outFile;
 
-        // Program 3.2
+        // Program 3.3
         outFile = new std::ofstream("CDC6600_program3_len5.csv");
         superPuter = new CDC6600();
         superPuter->init(outFile, program3,
