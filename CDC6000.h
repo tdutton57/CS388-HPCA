@@ -1,13 +1,13 @@
 /**
- * @file    CDC7600.h
+ * @file    CDC6000.h
  * @project CS388-HPCA
  *
  * @author  David Zemon, Katie Isbell
  * @email   david@stlswedespeed.com
  */
 
-#ifndef CDC7600_H_
-#define CDC7600_H_
+#ifndef CDC6000_H_
+#define CDC6000_H_
 
 #include <iostream>
 #include <algorithm>
@@ -19,21 +19,33 @@
 #include "Instruction.h"
 #include "FunctionalUnit.h"
 #include "InstructionPipeline.h"
-#include "CDC7600_Exceptions.h"
+#include "Exceptions.h"
 
-#define CDC7600_REGISTER_BANK_SIZE    8
-#define CDC7600_WORDS_PER_LONGWORD    2
+#define CDC6000_REGISTER_BANK_SIZE    8
+#define CDC6000_WORDS_PER_LONGWORD    2
 #define CDC7600_MEM_ACCESS_TIME       4
-#define CDC7600_OUTPUT_DELIM          ','
+#define CDC6600_MEM_ACCESS_TIME       5
+#define CDC6000_OUTPUT_DELIM          ','
+
+#define CDC6600_NUM_MULF              2
+#define CDC6600_NUM_INC               2
+#define CDC6600_NUM_BOOL              1
+#define CDC6600_NUM_JMP               1
+#define CDC6600_NUM_SHIFT             1
+#define CDC6600_NUM_ADDF              1
+#define CDC6600_NUM_ADDL              1
+#define CDC6600_NUM_DIVF              1
 
 /**
  * @brief: This class represents an instance of the CDC7600
  */
-class CDC7600 {
+class CDC6000 {
     protected:
         class Register {
             public:
-                Register () : m_readReady(0), m_lock(0) {}
+                Register () :
+                        m_readReady(0), m_lock(0) {
+                }
 
                 void reset () {
                     m_readReady = m_lock = 0;
@@ -61,22 +73,21 @@ class CDC7600 {
         };
 
     public:
-
         /**
          * @brief   Constructor which initializes the functional units
          *          and program memory
          *
          * @param   out
-         * @param   program The list of instructions to be executed
-         * @param   instrCount
-        */
-        CDC7600 (std::ostream *out, Instruction program[],
-                const unsigned int instrCount);
+         */
+        CDC6000 ();
 
         /**
          * @brief   Destructor to delete an instance of the CDC7600
-        */
-        ~CDC7600 ();
+         */
+        virtual ~CDC6000 ();
+
+        virtual void init (std::ostream *out, Instruction program[],
+                const unsigned int instrCount);
 
         /**
          * @brief   Runs the set of instructions once
@@ -99,7 +110,7 @@ class CDC7600 {
          *          counter, the clock cycles, issue time, the functional units,
          *          and all registers
          */
-        void reset ();
+        virtual void reset ();
 
     protected:
         /**
@@ -150,24 +161,26 @@ class CDC7600 {
 
         /**
          * @brief   Returns the functional unit used for this instruction
-        */
-        FunctionalUnit* getFunctionalUnit (const Instruction *instr);
+         */
+        virtual FunctionalUnit* getFunctionalUnit (
+                const Instruction *instr) = 0;
 
         /**
-        * @brief   Returns the list of registers that could delay the
-        *          time to start executing the instruction
-        * @param   *instr A pointer to the instruction for which we want
-        *          to return its dependency registers
-        */
-        std::list<Instruction::register_t> getDependencyRegisters
-              (const Instruction *instr) const;
+         * @brief   Returns the list of registers that could delay the
+         *          time to start executing the instruction
+         * @param   *instr A pointer to the instruction for which we want
+         *          to return its dependency registers
+         */
+        std::list<Instruction::register_t> getDependencyRegisters (
+                const Instruction *instr) const;
 
-        const CDC7600::Register getRegister (const Instruction::register_t reg) const;
+        const CDC6000::Register getRegister (
+                const Instruction::register_t reg) const;
 
-        CDC7600::Register* getRegisterP (const Instruction::register_t reg);
+        CDC6000::Register* getRegisterP (const Instruction::register_t reg);
 
-        unsigned int latestDependencyTime
-              (const std::list<Instruction::register_t> &registers);
+        unsigned int latestDependencyTime (
+                const std::list<Instruction::register_t> &registers);
 
     protected:
         std::ostream *m_out;
@@ -175,15 +188,62 @@ class CDC7600 {
 
         InstructionPipeline m_instrMem;
         unsigned int m_pc;
+        unsigned int m_newWordDelay;
+        unsigned int m_memAccessTime;
 
         unsigned int m_clock;
         unsigned int m_issue;
         unsigned int m_wordStart;
-        std::vector<FunctionalUnit> m_funcUnits;
 
-        CDC7600::Register m_Rx[CDC7600_REGISTER_BANK_SIZE];
-        CDC7600::Register m_Ra[CDC7600_REGISTER_BANK_SIZE];
-        CDC7600::Register m_Rb[CDC7600_REGISTER_BANK_SIZE];
+        CDC6000::Register m_Rx[CDC6000_REGISTER_BANK_SIZE];
+        CDC6000::Register m_Ra[CDC6000_REGISTER_BANK_SIZE];
+        CDC6000::Register m_Rb[CDC6000_REGISTER_BANK_SIZE];
 };
 
-#endif /* CDC7600_H_ */
+class CDC7600: public CDC6000 {
+    public:
+        CDC7600 () :
+                CDC6000() {
+            m_memAccessTime = CDC7600_MEM_ACCESS_TIME;
+        }
+
+        void init (std::ostream *out, Instruction program[],
+                const unsigned int instrCount);
+
+        void reset ();
+
+        /**
+         * @brief   Returns the functional unit used for this instruction
+         */
+        FunctionalUnit* getFunctionalUnit (const Instruction *instr);
+
+    protected:
+        std::vector<FunctionalUnit> m_funcUnits;
+};
+
+class CDC6600: public CDC6000 {
+    protected:
+        static unsigned int getNumFunctionalUnit (
+                const FunctionalUnit::typeCDC6600 unit);
+    public:
+        CDC6600 () :
+                CDC6000() {
+            m_memAccessTime = CDC6600_MEM_ACCESS_TIME;
+        }
+
+        void init (std::ostream *out, Instruction program[],
+                const unsigned int instrCount);
+
+        void reset ();
+
+        /**
+         * @brief   Returns the functional unit used for this instruction
+         */
+        FunctionalUnit* getFunctionalUnit (const Instruction *instr);
+    protected:
+        FunctionalUnit* getReadyFunction (
+                std::vector<FunctionalUnit> *functUnits);
+    protected:
+        std::vector<std::vector<FunctionalUnit> > m_funcUnits;
+};
+#endif /* CDC6000_H_ */

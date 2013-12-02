@@ -16,16 +16,32 @@
 #include <utility>
 #include <list>
 #include "Instruction.h"
-#include "CDC7600_Exceptions.h"
+#include "Exceptions.h"
 
 /*
  * @brief   This class represents the Instruction Pipeline for the CDC6000
  *          series of processors
  */
 class InstructionPipeline {
+
+    public:
+        typedef enum _cdc_proc_t {
+            CDC6600,
+            CDC7600,
+            CDC_PROCS
+        } cdc_proc_t;
+
     protected:
         class InstructionStack {
             public:
+                InstructionStack () :
+                        m_maxSize(0) {
+                }
+
+                void setMaxSize (const unsigned int maxSize) {
+                    m_maxSize = maxSize;
+                }
+
                 void clear ();
 
                 bool contains (const unsigned int pc);
@@ -36,6 +52,7 @@ class InstructionPipeline {
                         const std::vector<std::pair<unsigned int, Instruction> > &word);
 
             protected:
+                unsigned int m_maxSize;
                 std::list<std::vector<std::pair<unsigned int, Instruction> > > m_stack;
         };
 
@@ -43,6 +60,8 @@ class InstructionPipeline {
         InstructionPipeline ();
         ~InstructionPipeline ();
         void reset ();
+
+        void setProcessor (const cdc_proc_t proc);
 
         void load (Instruction &instr);
 
@@ -77,6 +96,11 @@ class InstructionPipeline {
         unsigned int m_wordStartClock;
         InstructionStack m_stack;
         bool m_newWord;
+
+        unsigned int m_defaultDelay;
+        unsigned int m_pcIncAddTime;
+        unsigned int m_memAccessAddTime;
+        unsigned int m_instrStackDelayTime;
 };
 
 #endif /* INSTRUCTIONPIPELINE_H_ */
