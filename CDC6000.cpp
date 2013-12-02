@@ -82,7 +82,7 @@ void CDC6000::reset () {
     banks[1] = m_Ra;
     banks[2] = m_Rb;
     for (uint8_t bank = 0; bank < 3; ++bank)
-        for (uint8_t reg = 0; reg < CDC7600_REGISTER_BANK_SIZE; ++reg)
+        for (uint8_t reg = 0; reg < CDC6000_REGISTER_BANK_SIZE; ++reg)
             banks[bank][reg].reset();
     delete[] banks;
 
@@ -90,17 +90,17 @@ void CDC6000::reset () {
 }
 
 void CDC6000::initOutput () {
-    *m_out << "Word #" << CDC7600_OUTPUT_DELIM;
-    *m_out << "Instruction" << CDC7600_OUTPUT_DELIM;
-    *m_out << "Semantics" << CDC7600_OUTPUT_DELIM;
-    *m_out << "Len." << CDC7600_OUTPUT_DELIM;
-    *m_out << "Opcode" << CDC7600_OUTPUT_DELIM;
-    *m_out << "Issue" << CDC7600_OUTPUT_DELIM;
-    *m_out << "Start" << CDC7600_OUTPUT_DELIM;
-    *m_out << "Result" << CDC7600_OUTPUT_DELIM;
-    *m_out << "Unit Ready" << CDC7600_OUTPUT_DELIM;
-    *m_out << "Fetch" << CDC7600_OUTPUT_DELIM;
-    *m_out << "Store" << CDC7600_OUTPUT_DELIM << std::endl;
+    *m_out << "Word #" << CDC6000_OUTPUT_DELIM;
+    *m_out << "Instruction" << CDC6000_OUTPUT_DELIM;
+    *m_out << "Semantics" << CDC6000_OUTPUT_DELIM;
+    *m_out << "Len." << CDC6000_OUTPUT_DELIM;
+    *m_out << "Opcode" << CDC6000_OUTPUT_DELIM;
+    *m_out << "Issue" << CDC6000_OUTPUT_DELIM;
+    *m_out << "Start" << CDC6000_OUTPUT_DELIM;
+    *m_out << "Result" << CDC6000_OUTPUT_DELIM;
+    *m_out << "Unit Ready" << CDC6000_OUTPUT_DELIM;
+    *m_out << "Fetch" << CDC6000_OUTPUT_DELIM;
+    *m_out << "Store" << CDC6000_OUTPUT_DELIM << std::endl;
 }
 
 void CDC6000::runInstruction (Instruction *instr) {
@@ -139,7 +139,7 @@ void CDC6000::runInstruction (Instruction *instr) {
             case Instruction::a3:
             case Instruction::a4:
             case Instruction::a5:
-                fetch = result + CDC7600_MEM_ACCESS_TIME;
+                fetch = result + m_memAccessTime;
                 fetchStr << fetch;
                 getRegisterP(
                         static_cast<Instruction::register_t>(instr->getOp1()
@@ -147,7 +147,7 @@ void CDC6000::runInstruction (Instruction *instr) {
                 break;
             case Instruction::a6:
             case Instruction::a7:
-                store = result + CDC7600_MEM_ACCESS_TIME;
+                store = result + m_memAccessTime;
                 storeStr << store;
                 break;
             default:
@@ -169,22 +169,22 @@ void CDC6000::printInstrInfo (const Instruction *instr,
     char octopusesssss[10];
 
     // Output some cool information about this instruction!
-    *m_out << instr->getWordNum() << CDC7600_OUTPUT_DELIM;
-    *m_out << instr->getInstrStr() << CDC7600_OUTPUT_DELIM;
-    *m_out << instr->getDescription() << CDC7600_OUTPUT_DELIM;
+    *m_out << instr->getWordNum() << CDC6000_OUTPUT_DELIM;
+    *m_out << instr->getInstrStr() << CDC6000_OUTPUT_DELIM;
+    *m_out << instr->getDescription() << CDC6000_OUTPUT_DELIM;
     if (Instruction::LONG == instr->getType())
-        *m_out << "L" << CDC7600_OUTPUT_DELIM;
+        *m_out << "L" << CDC6000_OUTPUT_DELIM;
     else
         /* Implied: if (Instruction::SHORT == instr->getType()) */
-        *m_out << "S" << CDC7600_OUTPUT_DELIM;
+        *m_out << "S" << CDC6000_OUTPUT_DELIM;
     sprintf(octopusesssss, "%o", instr->getOpcode());
-    *m_out << octopusesssss << CDC7600_OUTPUT_DELIM;
-    *m_out << m_issue << CDC7600_OUTPUT_DELIM;
-    *m_out << start << CDC7600_OUTPUT_DELIM;
-    *m_out << result << CDC7600_OUTPUT_DELIM;
-    *m_out << funcUnit->getUnitReady() << CDC7600_OUTPUT_DELIM;
-    *m_out << fetchStr << CDC7600_OUTPUT_DELIM;
-    *m_out << storeStr << CDC7600_OUTPUT_DELIM;
+    *m_out << octopusesssss << CDC6000_OUTPUT_DELIM;
+    *m_out << m_issue << CDC6000_OUTPUT_DELIM;
+    *m_out << start << CDC6000_OUTPUT_DELIM;
+    *m_out << result << CDC6000_OUTPUT_DELIM;
+    *m_out << funcUnit->getUnitReady() << CDC6000_OUTPUT_DELIM;
+    *m_out << fetchStr << CDC6000_OUTPUT_DELIM;
+    *m_out << storeStr << CDC6000_OUTPUT_DELIM;
     *m_out << std::endl;
 }
 

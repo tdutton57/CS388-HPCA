@@ -18,7 +18,7 @@
 #include "CDC6000.h"
 #include "Exceptions.h"
 
-//#define RUN_FULL
+#define RUN_FULL
 
 /**
  * Program 1 instructions

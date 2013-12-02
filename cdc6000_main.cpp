@@ -67,7 +67,6 @@ int main (int argc, char *argv[]) {
             output = &(std::cout);
 
         // Run the selected program
-
         switch (selection) {
             case 1:
                 superPuter->init(output, program1,

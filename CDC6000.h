@@ -21,10 +21,11 @@
 #include "InstructionPipeline.h"
 #include "Exceptions.h"
 
-#define CDC7600_REGISTER_BANK_SIZE    8
-#define CDC7600_WORDS_PER_LONGWORD    2
+#define CDC6000_REGISTER_BANK_SIZE    8
+#define CDC6000_WORDS_PER_LONGWORD    2
 #define CDC7600_MEM_ACCESS_TIME       4
-#define CDC7600_OUTPUT_DELIM          ','
+#define CDC6600_MEM_ACCESS_TIME       5
+#define CDC6000_OUTPUT_DELIM          ','
 
 #define CDC6600_NUM_MULF              2
 #define CDC6600_NUM_INC               2
@@ -188,20 +189,22 @@ class CDC6000 {
         InstructionPipeline m_instrMem;
         unsigned int m_pc;
         unsigned int m_newWordDelay;
+        unsigned int m_memAccessTime;
 
         unsigned int m_clock;
         unsigned int m_issue;
         unsigned int m_wordStart;
 
-        CDC6000::Register m_Rx[CDC7600_REGISTER_BANK_SIZE];
-        CDC6000::Register m_Ra[CDC7600_REGISTER_BANK_SIZE];
-        CDC6000::Register m_Rb[CDC7600_REGISTER_BANK_SIZE];
+        CDC6000::Register m_Rx[CDC6000_REGISTER_BANK_SIZE];
+        CDC6000::Register m_Ra[CDC6000_REGISTER_BANK_SIZE];
+        CDC6000::Register m_Rb[CDC6000_REGISTER_BANK_SIZE];
 };
 
 class CDC7600: public CDC6000 {
     public:
         CDC7600 () :
                 CDC6000() {
+            m_memAccessTime = CDC7600_MEM_ACCESS_TIME;
         }
 
         void init (std::ostream *out, Instruction program[],
@@ -225,6 +228,7 @@ class CDC6600: public CDC6000 {
     public:
         CDC6600 () :
                 CDC6000() {
+            m_memAccessTime = CDC6600_MEM_ACCESS_TIME;
         }
 
         void init (std::ostream *out, Instruction program[],
